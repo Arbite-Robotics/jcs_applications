@@ -1,0 +1,52 @@
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+*.bin
+*.out
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Other garbage
+*.orig
+
+# Build stuff
+**/build/*
+**/build*
+**/.dep/*
+
+
+# 3rd Party. We do this manually
+# **/3rd_party/*
+
+**/applications/jcs_host/*
+
+# Misc data
+*.csv
+
+# dont want workspaces
+*.sublime-workspace*
+.vscode/
+*.code-workspace
+.vs
+
+# No python cache
+*__pycache__*
