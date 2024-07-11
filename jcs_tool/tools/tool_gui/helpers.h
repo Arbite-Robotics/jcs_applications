@@ -1,0 +1,210 @@
+// Copyright (c) 2024 Arbite Robotics Pty Ltd
+// https://arbite.io
+//
+#ifndef HELPERS_H_
+#define HELPERS_H_
+
+#include <vector>
+#include <string>
+#include "imgui.h"
+#include "implot.h"
+
+#include <iostream>
+
+
+#define PARAM_NOTIFY(cmd, str) if (cmd != jcs::RET_OK) {     \
+                                   std::cout << str << "\n"; \
+                               }
+
+#define PARAM_NOTIFY_OK(cmd, str) if (cmd != jcs::RET_OK) {     \
+                                    std::cout << str << "\n"; \
+                                    return jcs::RET_OK;       \
+                                  }
+
+#define PARAM_NOTIFY_ERROR(cmd, str) if (cmd != jcs::RET_OK) {     \
+                                        std::cout << str << "\n"; \
+                                        return jcs::RET_ERROR;    \
+                                     }
+
+#define PARAM_NOTIFY_CLEANUP_ERROR(cmd, str, cleanup) if ( (cmd) != jcs::RET_OK) {   \
+                       std::cout << (str) << "\n"; \
+                       cleanup                   \
+                       return jcs::RET_ERROR;    \
+                    }
+
+#define PARAM_NOTIFY_CLEANUP_OK(cmd, str, cleanup) if ( (cmd) != jcs::RET_OK) {   \
+                       std::cout << (str) << "\n"; \
+                       cleanup                   \
+                       return jcs::RET_OK;    \
+                    }
+
+#define CHECK_CLEANUP_OK(cmd, cleanup) if ( (cmd) != jcs::RET_OK) { \
+                                           cleanup                  \
+                                           return jcs::RET_OK;      \
+                                       }
+
+
+namespace helpers {
+    void HelpMarker(const char* desc);
+
+    void combo_select(std::string const& name, std::vector<std::string> const* sources, int* current_idx, std::string* dest);
+
+    // utility structure for realtime plot
+    struct scrolling_buffer {
+        int max_size_;
+        int offset_;
+        ImVector<ImVec2> data_;
+
+        scrolling_buffer(int max_size = 2000) {
+            max_size_ = max_size;
+            offset_  = 0;
+            data_.reserve(max_size_);
+            // update_size(max_size);
+        }
+        
+        void update_size(int new_size) {
+            max_size_ = new_size;
+            offset_ = 0;
+            // data_.resize(max_size_);
+            erase();
+            data_.reserve(max_size_);
+        }
+
+        void add_point(float x, float y) {
+            if (data_.size() < max_size_) {
+                data_.push_back(ImVec2(x, y));
+            } else {
+                data_[offset_] = ImVec2(x, y);
+                offset_ = (offset_ + 1) % max_size_;
+            }
+        }
+
+        ImVec2 first_point() {
+            if (data_.empty()) {
+                return ImVec2(0.0f, 0.0f);
+            } else if (data_.size() < max_size_ || offset_ == 0) {
+                return data_.front();
+            } else {
+                return data_[offset_];
+            }
+        }
+
+        ImVec2 last_point() {
+            if (data_.empty()) {
+                return ImVec2(0.0f, 0.0f);
+            } else if (data_.size() < max_size_ || offset_ == 0) {
+                return data_.back();
+            } else {
+                return data_[offset_ - 1];
+            }
+        }
+        
+        void erase() {
+            if (data_.size() > 0) {
+                data_.shrink(0);
+                offset_  = 0;
+            }
+        }
+    };
+
+    // Normalise [-pi, pi]
+    double angle_norm_pipi(double angle);
+    // Normalise [0, 2pi]
+    double angle_norm_2pi(double angle);
+
+    // Snooze for ms
+    void sleep_ms(long ms);
+
+    // Time now in ms
+    long int time_now_ms();
+
+    // Step response test
+    struct plot_measurement {
+        std::string name_;
+        std::string x_name_;
+        std::string y_name_;
+        int size_;
+        std::vector<float> x_;
+        std::vector<float> y_;
+        bool plot_cursors_;
+        double cursor_tag_[4];
+        plot_measurement(std::string const& name, std::string const& x_name, std::string const& y_name, int const size);
+        void plot();
+
+        // Sample rate based
+        plot_measurement(std::string const& name, std::string const& x_name, std::string const& y_name, int const sample_time_s, int const sample_rate_hz);
+        void update_sample_rate(int sample_rate_hz);
+        void update_storage_length(int sample_time_s, int sample_rate_hz);
+    };
+
+    // Maths helpers
+    inline double sq(double v) {
+        return v*v;
+    }
+
+    struct vec2 {
+        double x, y;
+        vec2(double _x, double _y) : x(_x), y(_y) {}
+        vec2() : x(0.0), y(0.0) {}
+
+        // No checks for overflow - beware
+        double& operator[] (size_t idx)       { return ((double*)(void*)(char*)this)[idx]; }
+        double  operator[] (size_t idx) const { return ((const double*)(const void*)(const char*)this)[idx]; }
+
+        vec2& operator=(const vec2& v) {
+            x = v.x;
+            y = v.y;
+            return *this;
+        }
+
+        vec2 operator-(const vec2& v) const { return vec2(x - v.x, y - v.y); }
+        vec2 operator+(const vec2& v) const { return vec2(x + v.x, y + v.y); }
+    };
+
+    struct mat22 {
+        double a11, a12, a21, a22;
+
+        mat22(double _a11, double _a12, double _a21, double _a22) : a11(_a11), a12(_a12), a21(_a21), a22(_a22) {}
+        mat22() : a11(0.0), a12(0.0), a21(0.0), a22(0.0) {}
+
+        // No checks for overflow - beware
+        double& operator[] (size_t idx)       { return ((double*)(void*)(char*)this)[idx]; }
+        double  operator[] (size_t idx) const { return ((const double*)(const void*)(const char*)this)[idx]; }
+
+        vec2 operator*(const vec2& v) const {
+            return vec2(a11*v.x + a12*v.y, a21*v.x + a22*v.y);
+        }
+
+        // In place element wise multiply
+        mat22& multiply(const double v) {
+            a11 *= v;
+            a12 *= v;
+            a21 *= v;
+            a22 *= v;
+            return *this;
+        }
+        // In place element wise divide
+        mat22& divide(const double v) {
+            return multiply(1.0 / v);
+        }
+
+        // Return a transposed matrix
+        mat22 T() {
+            return mat22(a11, a21, a12, a22);
+        }
+    };
+
+    struct controller_pd {
+        double kp, kd;
+
+        controller_pd(double _kp, double _kd) : kp(_kp), kd(_kd) {}
+        controller_pd() : kp(0.0), kd(0.0) {}
+
+        double step_rt(double p_error, double d_error) {
+            return kp*p_error + kd*d_error;
+        }
+    };
+} // End namespace helpers
+
+
+#endif

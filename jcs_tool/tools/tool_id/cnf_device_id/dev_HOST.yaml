@@ -1,0 +1,16 @@
+name: HOST
+device_id: [0, 0, 0]
+
+base_config:
+  base_freq_hz: 1000
+
+transport_config:
+  - port: 0
+    type: transport_ecat_soem
+    ifname: enp3s0
+
+signals:
+  - name: host_ctl_A
+    type: float32
+    lim_h: 800.0
+    lim_l: -800.0

@@ -1,0 +1,20 @@
+- name: HOST
+  type: dev_host
+  network:
+    - port: 0
+      slaves:
+        - name: JC_0
+
+
+####################################################################
+- name: JC_0
+  type: dev_jc
+  network:
+    - port: 1
+      slaves:
+        - name: DEVICE_0
+
+
+####################################################################
+- name: DEVICE_0
+  type: dev_mc

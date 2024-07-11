@@ -1,0 +1,15 @@
+# Config for mc current test
+
+ramp_i_energise: 50.0
+ramp_i_ramp_time: 2.0
+ramp_i_dwell_time: 2.0
+
+rotate_theta_start: 0.0
+# Slow test: 
+# Rotate once per second for 3 mins
+rotate_n_rotations: 600
+rotate_time: 600
+
+# # Fast test: 
+# rotate_n_rotations: 1
+# rotate_time: 2
