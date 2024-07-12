@@ -32,7 +32,7 @@
 **/build/*
 **/build*
 **/.dep/*
-
+**install/*
 
 # 3rd Party. We do this manually
 # **/3rd_party/*
