@@ -134,9 +134,9 @@ void* thread_host_rt(void* arg) {
     }
 
     // Prepare cycle time. 
-    // Noting JCS master recalculates cycle_time_ns each tick
+    // Noting JCS host recalculates cycle_time_ns each tick
     // to account for Ethercat DC clocks
-    // First guess of cycle_time_ns from JCS master:
+    // First guess of cycle_time_ns from JCS host:
     int64_t cycle_time_ns = (int64_t)1e9 / (int64_t)host->base_frequency_get();
     task_rt::ready_cycle_rt(&thread_host, cycle_time_ns);
 
