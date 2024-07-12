@@ -1,11 +1,12 @@
 ##############################################################################################################
 # Target
 TARGET            = jcs_tool
-APPLICATION       = ../../
-TARGET_PATH       = $(APPLICATION)jcs_applications/jcs_tool/
-UTILITIES_PATH    = $(APPLICATION)jcs_applications/utilities/
-3RD_PARTY_PATH    = $(APPLICATION)jcs_applications/3rd_party/
-JCS_DEV_HOST_PATH = $(APPLICATION)jcs_host/
+TARGET_PATH       = ./
+UTILITIES_PATH    = ../utilities/
+3RD_PARTY_PATH    = ../3rd_party/
+
+# Point to jcs_host install location
+JCS_DEV_HOST_PATH = ../install/jcs_host/
 
 # General external
 INC_EXT         = -I/usr/local/include
@@ -22,7 +23,8 @@ INC_EXT         += $(INC_JCS)
 LIB_EXT         += -lrt -pthread
 
 # SOEM
-SOEM_DIR        = ../../../3rd_party/SOEM/install/
+# Point to SOEM install location
+SOEM_DIR        = ../install/SOEM/install/
 SOEM_LIB_DIR    = $(SOEM_DIR)lib/
 LIB_SOEM        = -L$(SOEM_LIB_DIR) -lsoem
 INC_EXT         += -I$(SOEM_DIR)include/soem/
