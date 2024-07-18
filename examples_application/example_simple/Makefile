@@ -1,35 +1,42 @@
 ##############################################################################################################
 # Target
-TARGET            = example_simple
-APPLICATION       = ../../../
-TARGET_PATH       = $(APPLICATION)example_simple/
-UTILITIES_PATH    = $(APPLICATION)jcs_applications/utilities/
-JCS_DEV_HOST_PATH = $(APPLICATION)jcs_host/
+TARGET            = jcs_tool
+TARGET_PATH       = ./
+
+BASE_PATH         = ../../
+
+# Path where jcs_host and SOEM libraries are installed
+LIB_INSTALL_PATH  = ../../install/
+
+UTILITIES_PATH    = $(BASE_PATH)utilities/
+3RD_PARTY_PATH    = $(BASE_PATH)3rd_party/
 
 # General external
-INC_EXT         = -I/usr/local/include
-COPTS           = -L/usr/local/lib -L/usr/lib
+INC_EXT           = -I/usr/local/include
+COPTS             = -L/usr/local/lib -L/usr/lib
 
 # JCS dev_host lib
-LIB_JCS         = -L$(JCS_DEV_HOST_PATH) -ljcs_host
-INC_JCS         = -I$(JCS_DEV_HOST_PATH) -I$(JCS_DEV_HOST_PATH)/types
+# Point to jcs_host install location
+JCS_DEV_HOST_PATH = $(LIB_INSTALL_PATH)jcs_host/
+LIB_JCS           = -L$(JCS_DEV_HOST_PATH) -ljcs_host
+INC_JCS           = -I$(JCS_DEV_HOST_PATH) -I$(JCS_DEV_HOST_PATH)/types
 
-LIB_EXT         = $(LIB_JCS)
-INC_EXT         += $(INC_JCS)
+LIB_EXT           = $(LIB_JCS)
+INC_EXT           += $(INC_JCS)
 
 # RTAI and pthreads
-LIB_EXT         += -lrt -pthread
+LIB_EXT           += -lrt -pthread
 
 # SOEM
-SOEM_DIR        = $(APPLICATION)../3rd_party/SOEM/install/
-SOEM_LIB_DIR    = $(SOEM_DIR)lib/
-LIB_SOEM        = -L$(SOEM_LIB_DIR) -lsoem
-INC_EXT         += -I$(SOEM_DIR)include/soem/
-LIB_EXT         += $(LIB_SOEM)
+SOEM_DIR          = $(LIB_INSTALL_PATH)SOEM/install/
+SOEM_LIB_DIR      = $(SOEM_DIR)lib/
+LIB_SOEM          = -L$(SOEM_LIB_DIR) -lsoem
+INC_EXT           += -I$(SOEM_DIR)include/soem/
+LIB_EXT           += $(LIB_SOEM)
 
 # YAML
-LIB_EXT         += -lyaml-cpp
-INC_EXT         += -I/usr/include/yaml-cpp
+LIB_EXT           += -lyaml-cpp
+INC_EXT           += -I/usr/include/yaml-cpp
 
 ##############################################################################################################
 # COMPILER WARNINGS
