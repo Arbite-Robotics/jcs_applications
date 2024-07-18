@@ -1,0 +1,45 @@
+- name: HOST
+  type: dev_host
+  network:
+    - port: 0
+      devices:
+        - name: jc_0
+  input_signals:
+    - rate: base
+      signals:
+        - source: mc_0
+          name  : w_m_0
+
+    - rate: 10Hz
+      signals:
+        - source: mc_0
+          name  : v_dc
+
+        - source: mc_0
+          name  : i_d
+        - source: mc_0
+          name  : i_q
+
+        - source: mc_0
+          name  : i_mot
+
+        - source: mc_0
+          name  : encoder_error_rate_0
+
+####################################################################
+- name: jc_0
+  type: dev_joint_controller
+  network:
+    - port: 0
+      devices:
+        - name: mc_0
+####################################################################
+- name: mc_0
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau
