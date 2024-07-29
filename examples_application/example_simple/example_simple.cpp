@@ -32,15 +32,15 @@ int main(int argc, char* argv[]) {
 
     std::string config_path = cmd_parser.cmd_option_get("-p");
     if (!config_path.empty()) {
-        std::cout << "test_vec_pool: Read path: " << config_path << std::endl;
+        std::cout << "example_simple: Read path: " << config_path << std::endl;
     } else {
-        std::cout << "test_vec_pool: ERROR: Need config path with -p\n";
+        std::cout << "example_simple: ERROR: Need config path with -p\n";
         return -1;
     }
 
     jcs::jcs_host* host = jcs::jcs_host::make_jcs_host(config_path, false, false);
     if (host == NULL) {
-        std::cout << "test_vec_pool: ERROR: host initialise\n";
+        std::cout << "example_simple: ERROR: host initialise\n";
         return -1;
     }
 
@@ -55,13 +55,13 @@ int main(int argc, char* argv[]) {
 
     // Start non realtime thread
     if (task_rt::task_start(&thread_host) != jcs::RET_OK) {
-        std::cout << "test_vec_pool: task_start failed\n";
+        std::cout << "example_simple: task_start failed\n";
         return -1;        
     }
 
     // Start the rt cyclic thread
     if (task_rt::task_start_rt(&thread_host) != jcs::RET_OK) {
-        std::cout << "test_vec_pool: task_start_rt failed\n";
+        std::cout << "example_simple: task_start_rt failed\n";
         return -1;        
     }
 
@@ -82,8 +82,8 @@ void* thread_host_rt(void* arg) {
     std::vector<float> signals_in_f(host->sig_input_sz_unsafe_rt(jcs::signal_type::float32_s, 0));
     std::vector<float> signals_out_f(host->sig_output_sz_unsafe_rt(jcs::signal_type::float32_s, 0));
 
-    std::cout << "test_vec_pool: About to enter RT loop at time " << jcs::external::time_now_ns() << "\n";
-    std::cout << "test_vec_pool: Waiting for cyclic warmup\n";
+    std::cout << "example_simple: About to enter RT loop at time " << jcs::external::time_now_ns() << "\n";
+    std::cout << "example_simple: Waiting for cyclic warmup\n";
 
     // Prepare cycle time. 
     // Noting jcs_host recalculates cycle_time_ns each tick
@@ -100,7 +100,7 @@ void* thread_host_rt(void* arg) {
         }
 
         if (host->step_rt(&cycle_time_ns) != jcs::RET_OK) {
-            std::cout << "test_vec_pool: Error: step_rt\n";
+            std::cout << "example_simple: Error: step_rt\n";
             // Bail - presently cant come back from a failure here
             host_args->do_running = false;
         }
@@ -122,7 +122,7 @@ void* thread_host_param(void* arg) {
         // Should check for timeout here
         jcs::external::sleep_us(1e6);
         if (host_args->do_running == false) {
-            std::cout << "test_vec_pool: Host cyclic_ready failed\n";
+            std::cout << "example_simple: Host cyclic_ready failed\n";
             return 0;
         }
     }
