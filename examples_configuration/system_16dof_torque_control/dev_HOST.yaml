@@ -1,0 +1,161 @@
+name: HOST
+device_id: [0, 0, 0]
+
+####################################################################
+base_config:
+  base_freq_hz: 2000
+  # base_freq_hz: 500 # For firmware updating
+  sub_rates:
+    - name    : device
+    - name    : 10Hz
+      freq_hz : 10
+
+####################################################################
+transport_config:
+  - port: 0
+    type: transport_ecat_soem
+    ifname: enp3s0
+    sync_offset_time_us: 200 # For 2khz base freq
+
+####################################################################
+behaviour:
+  autostart_nodes:  true
+  autostop_nodes:   true
+  get_errors_at_shutdown: true
+
+####################################################################
+# Host input signals
+signals:
+  # Motor current inputs
+  - name: host_mc_tau_00
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+  - name: host_mc_tau_01
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+  - name: host_mc_tau_02
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+  - name: host_mc_tau_03
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+
+  - name: host_mc_tau_10
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+  - name: host_mc_tau_11
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+  - name: host_mc_tau_12
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+  - name: host_mc_tau_13
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+
+  - name: host_mc_tau_20
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+  - name: host_mc_tau_21
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+  - name: host_mc_tau_22
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+  - name: host_mc_tau_23
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+
+  - name: host_mc_tau_30
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+  - name: host_mc_tau_31
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+  - name: host_mc_tau_32
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+  - name: host_mc_tau_33
+    type: float32
+    lim_h: 6.0
+    lim_l: -6.0
+
+####################################################################
+# list_ready_dev:
+        
+####################################################################
+list_start:
+  - name: mc_align
+    device_groups:
+      - group_id: 0
+        devices:
+          - name: mc_30
+    tasks:
+      # Start mc's so we can align
+      # This also starts the mc's encoder and estimator
+      - type  : cmd
+        group : 0
+        write : start
+      # Wait for the mc to calibrate and become ready
+      - type  : delay
+        delay_ms: 200
+
+      # # Configure the controller for alignment mode
+      # - type:  cmd
+      #   group: 0
+      #   write: controller_mode
+      #   enum:  test_align
+      # # Enable the controller
+      # - type:  cmd
+      #   group: 0
+      #   write: controller_start
+      # # Wait for d-axis to become energised
+      # - type  : while
+      #   group : 0
+      #   condition: true
+      #   read  : align_in_dwell
+      # # Snooze into dwell for a bit      
+      # - type  : delay
+      #   delay_ms: 1000
+      # # Zero the motor position
+      # - type  : cmd
+      #   group : 0
+      #   write : encoder_0_position_zero
+      # # Exit align mode
+      # - type  : cmd
+      #   group : 0
+      #   write : controller_stop
+      # - type  : delay
+      #   delay_ms: 100
+
+  # - name: mc_start_i_ctl
+  #   device_groups:
+  #     - group_id: 0
+  #       devices:
+  #         - name: mc_30   
+  #   tasks:
+  #     # Configure the controller for DQ current mode
+  #     - type:  cmd
+  #       group: 0
+  #       write: controller_mode
+  #       enum:  current_dq
+  #     # Enable the controller
+  #     - type:  cmd
+  #       group: 0
+  #       write: controller_start
+

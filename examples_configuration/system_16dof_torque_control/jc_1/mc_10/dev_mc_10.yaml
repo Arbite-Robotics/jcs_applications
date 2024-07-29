@@ -1,0 +1,63 @@
+name: mc_10
+device_id: [5177396, 1413697558, 540356662]
+
+# Motor torque constant is defined, so input current command signal `i_q`
+# is renamed to reflect that it is now a torque command.
+# Redefine i_q name and units
+i_q_name:  tau
+i_q_units: Nm
+
+# Configuration parameters to be sent to device
+parameters:
+  ########################################################################
+  # Current controllers
+  i_d_kp: 0.1715988
+  i_d_ki: 342.00000000000006
+  i_q_kp: 0.1715988
+  i_q_ki: 342.00000000000006
+  ########################################################################
+  # Motor parameters
+  # Motor torque constant (Nm/A)
+  motor_Kt: 0.1
+  # Motor has 6 pole pairs
+  motor_pp: 6
+  # Phases are wired backwards
+  # motor_phase_swap: yes # Default: no
+
+  ########################################################################
+  # Temperature penalty 
+  temperature_penalty_limit_h: 90.0
+  temperature_penalty_limit_l: 80.0
+  temperature_penalty_scale_l: 0.01
+
+  ########################################################################
+  # External analog temperature penalty
+  # Configure the external analog
+  an_0_gain:   0.0805664063
+  an_0_offset: 50.0
+  # an_0_limit_warning_h: 50.0
+  # an_0_limit_warning_l: 0.0
+  # an_0_limit_error_h:   300.0
+  # an_0_limit_error_l:   -50.0
+  # an_0_filter_fc_hz: 100.0
+  # Now configure the external analog penalty contribution
+  # temperature_penalty_using_ext_an: true # Default: false
+  # temperature_penalty_ext_an_limit_h: 70
+  # temperature_penalty_ext_an_limit_l: 60
+  # temperature_penalty_ext_an_scale_l: 0.01
+
+  ########################################################################
+  # D axis alignment current
+  # i_d_alignment:  5 # Propdrive 28-30
+
+
+  ########################################################################
+  # Encoder and estimator parameters
+  # mc4808 supports jcs_as5047p encoder (onboard encoder)
+  encoder_0_type: jcs_as5047p
+  # encoder_0_position_offset: 5.42032
+  encoder_0_direction: no
+
+  # Estimator
+  estimator_0_type: tracking_loop
+  estimator_0_tracking_loop_bandwidth_hz: 400.0

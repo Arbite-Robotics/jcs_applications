@@ -1,0 +1,347 @@
+- name: HOST
+  type: dev_host
+  network:
+    - port: 0
+      devices:
+        - name: jc_0
+        - name: jc_1
+        - name: jc_2
+        - name: jc_3
+  input_signals:
+    - rate: base
+      signals:
+        # Motor controllers - j0
+        - source: mc_00
+          name  : w_m_0
+        - source: mc_01
+          name  : w_m_0
+        - source: mc_02
+          name  : w_m_0
+        - source: mc_03
+          name  : w_m_0 
+
+        # Motor controllers - j1
+        - source: mc_10
+          name  : w_m_0
+        - source: mc_11
+          name  : w_m_0
+        - source: mc_12
+          name  : w_m_0
+        - source: mc_13
+          name  : w_m_0 
+
+        # Motor controllers - j2
+        - source: mc_20
+          name  : w_m_0
+        - source: mc_21
+          name  : w_m_0
+        - source: mc_22
+          name  : w_m_0
+        - source: mc_23
+          name  : w_m_0 
+
+        # Motor controllers - j3
+        - source: mc_30
+          name  : w_m_0
+        - source: mc_31
+          name  : w_m_0
+        - source: mc_32
+          name  : w_m_0
+        - source: mc_33
+          name  : w_m_0 
+
+        # # Joint controller 0
+        # - source: jc_0
+        #   name  : an_0
+
+        # # Joint controller 1
+        # - source: jc_1
+        #   name  : an_0
+
+        # # Joint controller 2
+        # - source: jc_2
+        #   name  : an_0
+
+        # # Joint controller 3
+        # - source: jc_3
+        #   name  : an_0
+
+    # If 10Hz rate not required, comment out or remove
+    # from dev_HOST.yaml
+    - rate: 10Hz
+      signals:
+        # Motor controllers - j0
+        - source: mc_00
+          name  : t_ave
+        - source: mc_01
+          name  : t_ave
+        - source: mc_02
+          name  : t_ave
+        - source: mc_03
+          name  : t_ave 
+
+        # Motor controllers - j1
+        - source: mc_10
+          name  : t_ave
+        - source: mc_11
+          name  : t_ave
+        - source: mc_12
+          name  : t_ave
+        - source: mc_13
+          name  : t_ave 
+
+        # Motor controllers - j2
+        - source: mc_20
+          name  : t_ave
+        - source: mc_21
+          name  : t_ave
+        - source: mc_22
+          name  : t_ave
+        - source: mc_23
+          name  : t_ave 
+
+        # Motor controllers - j3
+        - source: mc_30
+          name  : t_ave
+        - source: mc_31
+          name  : t_ave
+        - source: mc_32
+          name  : t_ave
+        - source: mc_33
+          name  : t_ave 
+
+
+
+####################################################################
+- name: jc_0
+  type: dev_joint_controller
+  network:
+    - port: 0
+      devices:
+        - name: mc_00
+    - port: 1
+      devices:
+        - name: mc_01
+    - port: 2
+      devices:
+        - name: mc_02
+    - port: 3
+      devices:
+        - name: mc_03
+####################################################################
+- name: mc_00
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_00
+####################################################################
+- name: mc_01
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_01
+####################################################################
+- name: mc_02
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_02
+####################################################################
+- name: mc_03
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_03
+
+
+
+####################################################################
+- name: jc_1
+  type: dev_joint_controller
+  network:
+    - port: 0
+      devices:
+        - name: mc_10
+    - port: 1
+      devices:
+        - name: mc_11
+    - port: 2
+      devices:
+        - name: mc_12
+    - port: 3
+      devices:
+        - name: mc_13
+####################################################################
+- name: mc_10
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_10
+####################################################################
+- name: mc_11
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_11
+####################################################################
+- name: mc_12
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_12
+####################################################################
+- name: mc_13
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_13
+
+
+
+####################################################################
+- name: jc_2
+  type: dev_joint_controller
+  network:
+    - port: 0
+      devices:
+        - name: mc_20
+    - port: 1
+      devices:
+        - name: mc_21
+    - port: 2
+      devices:
+        - name: mc_22
+    - port: 3
+      devices:
+        - name: mc_23
+####################################################################
+- name: mc_20
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_20
+####################################################################
+- name: mc_21
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_21
+####################################################################
+- name: mc_22
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_22
+####################################################################
+- name: mc_23
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_23
+
+
+
+####################################################################
+- name: jc_3
+  type: dev_joint_controller
+  network:
+    - port: 0
+      devices:
+        - name: mc_30
+    - port: 1
+      devices:
+        - name: mc_31
+    - port: 2
+      devices:
+        - name: mc_32
+    - port: 3
+      devices:
+        - name: mc_33
+####################################################################
+- name: mc_30
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_30
+####################################################################
+- name: mc_31
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_31
+####################################################################
+- name: mc_32
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_32
+####################################################################
+- name: mc_33
+  type: dev_motor_controller
+  input_signals:
+    # Motor torque input signal direct from host command
+    - rate: base
+      signals:
+        - signal_name: tau
+          source: HOST
+          name: host_mc_tau_33
