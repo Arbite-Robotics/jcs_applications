@@ -19,7 +19,7 @@ A single joint controller and motor controller with high bandwidth PD position c
 
 In this example the motor controller (mc_0) connects to port 0 of the joint controller (jc_0) and the joint controller connects back to the host computer (HOST).
 
-A PD process (mc_0_spd_ctl) runs on the motor controller at `device rate`. For a motor controller the device rate is 15kHz.
+A PD process (mc_0_pos_ctl) runs on the motor controller at `device rate`. For a motor controller the device rate is 15kHz.
 For this example, the PD process (rather than the PID process) is used as it takes input signals for both the P term and the D term.
 
 The routing of the signals into and out of the PD process define the purpose of the process.
