@@ -25,7 +25,7 @@ For this example, the PD process (rather than the PID process) is used as it tak
 The routing of the signals into and out of the PD process define the purpose of the process.
 
 In this case, the PD process takes proportional feedback from the motor controllers position estimate (th_m_0) and takes a proportional setpoint from a host signal.
-The process also takes derivative feedback from the motor controllers speed estimate (w_m_0), but does not take any derivative setpoint.  
+The process also takes derivative feedback from the motor controllers speed estimate (w_m_0), but does not take any derivative setpoint.
 The motor controller is configured to take a current command from the PD controller.
 By defining feedback, setpoint and output signals in this manner, the PD process is acting as a proportional position controller with velocity based damping. 
 
@@ -35,7 +35,7 @@ PD controller will look like:
 
 
 The position controller PD process is configured similarly to devices - it has a yaml configuration file and the parameters are accessible via the parameter interface.
-Since the PD controller output is a current command, output (and in turn, integrator) limits are configured.
+Since the PD controller output is a current command, output limits are configured.
 The controller gains are also configured via the yaml configuration.
 Note that motor position is a rotational quantity (but speed is not), so the `proc_pd_p_is_rotational_error` parameter is set to true to allow the controller to compute the error term correctly.
 
