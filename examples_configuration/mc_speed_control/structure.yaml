@@ -1,0 +1,75 @@
+- name: HOST
+  type: dev_host
+  network:
+    - port: 0
+      devices:
+        - name: jc_0
+  input_signals:
+    - rate: base
+      signals:
+          # Motor speed
+        - source: mc_0
+          name  : w_m_0
+
+          # Debug - speed controller output
+        - source: mc_0_spd_ctl
+          name  : u
+
+    - rate: 10Hz
+      signals:
+        - source: mc_0
+          name  : v_dc
+
+        - source: mc_0
+          name  : i_d
+        - source: mc_0
+          name  : i_q
+
+        - source: mc_0
+          name  : i_mot
+
+        - source: mc_0
+          name  : encoder_error_rate_0
+
+####################################################################
+- name: jc_0
+  type: dev_joint_controller
+  network:
+    - port: 0
+      devices:
+        - name: mc_0
+
+####################################################################
+- name: mc_0
+  type: dev_motor_controller
+  input_signals:
+    # Motor current input signal from speed controller at device rate
+    - rate: device
+      signals:
+        - signal_name: i_q
+          source: mc_0_spd_ctl
+          name: u
+
+  processes:
+    # Speed controller runs at device rate on the motor controller
+    - rate: device
+      names:
+        - name: mc_0_spd_ctl
+
+#################################
+# Speed PID controller running at device rate (15khz) on motor controller
+- name: mc_0_spd_ctl
+  type: proc_pid
+  input_signals:
+    - rate: device
+      signals:
+        - signal_name : feedback
+          source      : mc_0
+          name        : w_m_0
+
+    # Speed controller setpoint comes host
+    - rate: base
+      signals:
+        - signal_name : setpoint
+          source      : HOST
+          name        : host_mc_spd

@@ -1,0 +1,9 @@
+name: mc_0_spd_ctl
+
+# Configuration parameters to be sent to process
+parameters:
+  proc_pid_kp: 0.100
+  proc_pid_ki: 1.0
+  # mc4808 hard current limit at 8.1A
+  proc_pid_limit_out_h: 6.0
+  proc_pid_limit_out_l: -6.0

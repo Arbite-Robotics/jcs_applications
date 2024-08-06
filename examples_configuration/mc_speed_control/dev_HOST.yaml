@@ -1,0 +1,64 @@
+name: HOST
+device_id: [0, 0, 0]
+
+####################################################################
+base_config:
+  base_freq_hz: 2000
+  # base_freq_hz: 500 # For firmware updating
+  sub_rates:
+    - name    : device
+    - name    : 10Hz
+      freq_hz : 10
+
+####################################################################
+transport_config:
+  - port: 0
+    type: transport_ecat_soem
+    ifname: enp3s0
+    sync_offset_time_us: 200 # For 2khz base freq
+
+####################################################################
+behaviour:
+  autostart_nodes:  true
+  autostop_nodes:   true
+  get_errors_at_shutdown: true
+
+####################################################################
+# Host input signals
+signals:
+  - name: host_mc_spd
+    type: float32
+    lim_h: 800.0
+    lim_l: -800.0
+
+####################################################################
+# list_start:
+#   - name: mc_start_i_ctl
+#     device_groups:
+#       - group_id: 0
+#         devices:
+#           - name: mc_0   
+#     tasks:
+#       # Start motor controllers
+#       # This also starts the mc's encoder and estimator
+#       - type  : cmd
+#         group : 0
+#         write : start
+#       # Wait for the mc to calibrate and become ready
+#       - type  : delay
+#         delay_ms: 200
+#       # Configure the controller for DQ current mode
+#       - type:  cmd
+#         group: 0
+#         write: controller_mode
+#         enum:  current_dq
+#       # Enable the controller
+#       - type:  cmd
+#         group: 0
+#         write: controller_start
+
+####################################################################
+# list_stop:
+
+####################################################################
+# list_shutdown:
