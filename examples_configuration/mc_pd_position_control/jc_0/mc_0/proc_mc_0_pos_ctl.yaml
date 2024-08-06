@@ -1,0 +1,12 @@
+name: mc_0_pos_ctl
+
+# Configuration parameters to be sent to process
+parameters:
+  proc_pd_kp: 0.1
+  proc_pd_kd: 0.1
+  # mc4808 hard current limit at 8.1A
+  proc_pd_limit_out_h: 6.0
+  proc_pd_limit_out_l: -6.0
+
+  # p term is rotational - Is coming from motor position
+  proc_pd_p_is_rotational_error: true
