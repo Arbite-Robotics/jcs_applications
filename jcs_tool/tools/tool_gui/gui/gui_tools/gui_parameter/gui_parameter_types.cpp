@@ -30,6 +30,8 @@ void param_none::render(std::string const& target_device) {
     }
     // Read - N/A
     ImGui::TableNextColumn();
+    // Watch - N/A
+    ImGui::TableNextColumn();
     // Value
     ImGui::TableNextColumn();
 
@@ -70,6 +72,14 @@ void param_boolean::render(std::string const& target_device) {
     // Read
     ImGui::TableNextColumn();
     if (ImGui::Button("Read", ImVec2(-FLT_MIN, 0.0f))) {
+        bool value = false;
+        PARAM_NOTIFY( host_->read_bool(target_device, name_, &value), fail_text )
+        val_ = value;
+    }
+    // Watch
+    ImGui::TableNextColumn();
+    ImGui::Checkbox("##watch", &watch_);
+    if (watch_) {
         bool value = false;
         PARAM_NOTIFY( host_->read_bool(target_device, name_, &value), fail_text )
         val_ = value;
@@ -140,10 +150,17 @@ void param_float32::render(std::string const& target_device) {
         PARAM_NOTIFY( host_->read_float(target_device, name_, &value), fail_text )
         read_val_ = value;
     }
+    // Watch
+    ImGui::TableNextColumn();
+    ImGui::Checkbox("##watch", &watch_);
+    if (watch_) {
+        float value = 0.0f;
+        PARAM_NOTIFY( host_->read_float(target_device, name_, &value), fail_text )
+        read_val_ = value;
+    }
 
     ImGui::TableNextColumn();
     ImGui::Text("%.6f", read_val_);
-
     if (length_ == 0) {
         ImGui::EndDisabled();
     }
@@ -216,6 +233,10 @@ void param_float32_vec::render(std::string const& target_device) {
     if (ImGui::Button("Read", ImVec2(-FLT_MIN, 0.0f))) {
         PARAM_NOTIFY( host_->read_float(target_device, name_, &read_val_), fail_text )
     }
+
+    // Watch
+    ImGui::TableNextColumn();
+    // Do nothing
 
     ImGui::TableNextColumn();
     ImGui::SetNextItemWidth(-FLT_MIN);
@@ -292,6 +313,14 @@ void param_uint32::render(std::string const& target_device) {
         PARAM_NOTIFY( host_->read_uint32(target_device, name_, &value), fail_text )
         read_val_ = value;
     }
+    // Watch
+    ImGui::TableNextColumn();
+    ImGui::Checkbox("##watch", &watch_);
+    if (watch_) {
+        uint32_t value = 0;
+        PARAM_NOTIFY( host_->read_uint32(target_device, name_, &value), fail_text )
+        read_val_ = value;
+    }
 
     ImGui::TableNextColumn();
     ImGui::Text("%u", read_val_);
@@ -352,6 +381,14 @@ void param_uint16::render(std::string const& target_device) {
     
     ImGui::TableNextColumn();
     if (ImGui::Button("Read", ImVec2(-FLT_MIN, 0.0f))) {
+        uint16_t value = 0;
+        PARAM_NOTIFY( host_->read_uint16(target_device, name_, &value), fail_text )
+        read_val_ = value;
+    }
+    // Watch
+    ImGui::TableNextColumn();
+    ImGui::Checkbox("##watch", &watch_);
+    if (watch_) {
         uint16_t value = 0;
         PARAM_NOTIFY( host_->read_uint16(target_device, name_, &value), fail_text )
         read_val_ = value;
@@ -420,6 +457,14 @@ void param_uint8::render(std::string const& target_device) {
         PARAM_NOTIFY( host_->read_uint8(target_device, name_, &value), fail_text )
         read_val_ = value;
     }
+    // Watch
+    ImGui::TableNextColumn();
+    ImGui::Checkbox("##watch", &watch_);
+    if (watch_) {
+        uint8_t value = 0;
+        PARAM_NOTIFY( host_->read_uint8(target_device, name_, &value), fail_text )
+        read_val_ = value;
+    }
 
     ImGui::TableNextColumn();
     ImGui::Text("%u", read_val_);
@@ -476,6 +521,14 @@ void param_enum::render(std::string const& target_device) {
     
     ImGui::TableNextColumn();
     if (ImGui::Button("Read", ImVec2(-FLT_MIN, 0.0f))) {
+        std::string value;
+        PARAM_NOTIFY( host_->read_enum(target_device, name_, &value), fail_text )
+        read_val_ = value;
+    }
+    // Watch
+    ImGui::TableNextColumn();
+    ImGui::Checkbox("##watch", &watch_);
+    if (watch_) {
         std::string value;
         PARAM_NOTIFY( host_->read_enum(target_device, name_, &value), fail_text )
         read_val_ = value;

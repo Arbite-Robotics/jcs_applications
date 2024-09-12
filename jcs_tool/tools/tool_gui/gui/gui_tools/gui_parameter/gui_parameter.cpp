@@ -111,7 +111,7 @@ int gui_parameter::render() {
 
     // Render table of parameters based on selected device
     static ImGuiTableFlags table_flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable;
-    if (ImGui::BeginTable("Parameters", 7, table_flags)) {   
+    if (ImGui::BeginTable("Parameters", 8, table_flags)) {
 
         ImGui::TableSetupColumn("Name",      ImGuiTableColumnFlags_WidthFixed, 300.0f);
         ImGui::TableSetupColumn("Type",      ImGuiTableColumnFlags_WidthFixed, 50.0f);
@@ -119,6 +119,7 @@ int gui_parameter::render() {
         ImGui::TableSetupColumn("Write Val", ImGuiTableColumnFlags_WidthFixed, 180.0f);
         ImGui::TableSetupColumn("Write",     ImGuiTableColumnFlags_WidthFixed, 50.0f);
         ImGui::TableSetupColumn("Read",      ImGuiTableColumnFlags_WidthFixed, 50.0f);
+        ImGui::TableSetupColumn("Watch",     ImGuiTableColumnFlags_WidthFixed, 30.0f);
         ImGui::TableSetupColumn("Read Val",  ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableHeadersRow();
 

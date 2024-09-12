@@ -14,7 +14,7 @@
 class param_base {
 public:
     param_base(jcs::jcs_host* host, std::string const& name, int length) :
-        host_(host), name_(name), length_(length) {}
+        host_(host), name_(name), length_(length), watch_(false) {}
     ~param_base() {}
 
     virtual void render(std::string const& target_device) = 0;
@@ -24,6 +24,7 @@ public:
     jcs::jcs_host* host_;
     std::string name_;
     int length_;
+    bool watch_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////
