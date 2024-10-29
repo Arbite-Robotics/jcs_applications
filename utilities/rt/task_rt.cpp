@@ -283,7 +283,7 @@ void task_rt::advance_timespec(struct timespec *ts, int64_t nsec) {
     ts->tv_sec += add_sec;
     ts->tv_nsec += add_nsec;
 
-    if ( ts->tv_nsec > task_rt::nsec_per_sec ) {
+    if ( ts->tv_nsec >= task_rt::nsec_per_sec ) {
         add_nsec = ts->tv_nsec % task_rt::nsec_per_sec;
         ts->tv_sec += (ts->tv_nsec - add_nsec) / task_rt::nsec_per_sec;
         ts->tv_nsec = add_nsec;
