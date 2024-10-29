@@ -241,6 +241,15 @@ int gui_mc_tune::do_test_r(test_r* storage, std::string const& axis) {
     // Starting the controller starts the test
     PARAM_NOTIFY_ERROR( host_->write_command(target_device_, "controller_start"), "Parameter failed: controller_start" )
 
+    // Did the test have an error?
+    bool test_error = true;
+    helpers::sleep_ms(100);
+    PARAM_NOTIFY_ERROR( host_->read_bool(target_device_, "controller_is_error", &test_error), "Parameter failed: controller_is_error" )
+    if (test_error == true) {
+        std::cout << "ERROR: controller_start failed to start the test. Check that motor controller is ready to go.\n";
+        return jcs::RET_ERROR;
+    }
+
     // Wait for test to finish
     bool running = true;
     do {
@@ -277,6 +286,15 @@ int gui_mc_tune::do_test_l(test_l* storage, std::string const& axis) {
     PARAM_NOTIFY_ERROR( host_->write_enum(target_device_,   "controller_mode", "test_dq_l"), "Parameter failed: controller_mode" )
     // Starting the controller starts the test
     PARAM_NOTIFY_ERROR( host_->write_command(target_device_, "controller_start"), "Parameter failed: controller_start" )
+
+    // Did the test have an error?
+    bool test_error = true;
+    helpers::sleep_ms(100);
+    PARAM_NOTIFY_ERROR( host_->read_bool(target_device_, "controller_is_error", &test_error), "Parameter failed: controller_is_error" )
+    if (test_error == true) {
+        std::cout << "ERROR: controller_start failed to start the test. Check that motor controller is ready to go.\n";
+        return jcs::RET_ERROR;
+    }
 
     // Wait for test to finish
     bool running = true;
