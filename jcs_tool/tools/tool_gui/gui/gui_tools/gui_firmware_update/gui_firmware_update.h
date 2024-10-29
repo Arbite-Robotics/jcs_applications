@@ -21,17 +21,25 @@ public:
     int render();
 
 private:
-    std::string fw_name_;
-    std::string fw_path_;
-
-    bool fw_write_active_;
-
     enum class status {
         standby_s,
         success_s,
         failed_s
     };
+    // Firmware
+    std::string fw_name_;
+    std::string fw_path_;
+    bool fw_write_active_;
     status fw_status_;
+    void fw_update_render();
+
+    // Bootloader
+    std::string fl_name_;
+    std::string fl_path_;
+    bool fl_write_active_;
+    status fl_status_;
+    void fl_update_render();
+
 };
 
 #endif
