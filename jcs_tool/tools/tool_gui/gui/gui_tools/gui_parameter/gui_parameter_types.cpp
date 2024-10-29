@@ -81,7 +81,9 @@ void param_boolean::render(std::string const& target_device) {
     ImGui::Checkbox("##watch", &watch_);
     if (watch_) {
         bool value = false;
-        PARAM_NOTIFY( host_->read_bool(target_device, name_, &value), fail_text )
+        if (host_->read_bool(target_device, name_, &value) != jcs::RET_OK) {
+            watch_ = false;
+        }
         val_ = value;
     }
     // Print Read
@@ -155,7 +157,9 @@ void param_float32::render(std::string const& target_device) {
     ImGui::Checkbox("##watch", &watch_);
     if (watch_) {
         float value = 0.0f;
-        PARAM_NOTIFY( host_->read_float(target_device, name_, &value), fail_text )
+        if (host_->read_float(target_device, name_, &value) != jcs::RET_OK) {
+            watch_ = false;
+        }
         read_val_ = value;
     }
 
@@ -318,7 +322,9 @@ void param_uint32::render(std::string const& target_device) {
     ImGui::Checkbox("##watch", &watch_);
     if (watch_) {
         uint32_t value = 0;
-        PARAM_NOTIFY( host_->read_uint32(target_device, name_, &value), fail_text )
+        if (host_->read_uint32(target_device, name_, &value) != jcs::RET_OK) {
+            watch_ = false;
+        }
         read_val_ = value;
     }
 
@@ -390,7 +396,9 @@ void param_uint16::render(std::string const& target_device) {
     ImGui::Checkbox("##watch", &watch_);
     if (watch_) {
         uint16_t value = 0;
-        PARAM_NOTIFY( host_->read_uint16(target_device, name_, &value), fail_text )
+        if (host_->read_uint16(target_device, name_, &value) != jcs::RET_OK) {
+            watch_ = false;
+        }
         read_val_ = value;
     }
 
@@ -462,7 +470,9 @@ void param_uint8::render(std::string const& target_device) {
     ImGui::Checkbox("##watch", &watch_);
     if (watch_) {
         uint8_t value = 0;
-        PARAM_NOTIFY( host_->read_uint8(target_device, name_, &value), fail_text )
+        if (host_->read_uint8(target_device, name_, &value) != jcs::RET_OK) {
+            watch_ = false;
+        }
         read_val_ = value;
     }
 
@@ -530,7 +540,9 @@ void param_enum::render(std::string const& target_device) {
     ImGui::Checkbox("##watch", &watch_);
     if (watch_) {
         std::string value;
-        PARAM_NOTIFY( host_->read_enum(target_device, name_, &value), fail_text )
+        if (host_->read_enum(target_device, name_, &value) != jcs::RET_OK) {
+            watch_ = false;
+        }
         read_val_ = value;
     }
 
