@@ -8,6 +8,7 @@
 #include "gui_type_base.h"
 #include <vector>
 #include <string>
+#include <array>
 #include "gui_stimulus.h"
 #include "imgui.h"
 #include "helpers.h"

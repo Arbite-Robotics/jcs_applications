@@ -6,6 +6,7 @@
 
 #include "plot_sink.h"
 #include "helpers.h"
+#include <cstdint>
 
 class plot_sink_int : public plot_sink {
 public:

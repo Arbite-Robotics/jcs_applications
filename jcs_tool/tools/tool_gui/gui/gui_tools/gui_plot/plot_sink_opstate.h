@@ -5,7 +5,7 @@
 #define PLOT_SINK_OPSTATE_H_
 
 #include "plot_sink.h"
-
+#include <cstdint>
 
 class plot_sink_opstate : public plot_sink {
 public:
