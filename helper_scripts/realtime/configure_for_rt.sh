@@ -9,8 +9,15 @@
 
 
 # ----------------------------
-# sudo gedit /etc/default/grub => add
-# GRUB_CMDLINE_LINUX_DEFAULT="isolcpus=3 nohz_full=3 rcu_nocbs=3 rcu_nocb_poll elevator=noop nosmap  i915.enable_rc6=0 i915.enable_dc=0"
+# Make sure to check and add to following to your grub config
+#
+# sudo gedit /etc/default/grub => Comment out the existing GRUB_CMDLINE_LINUX_DEFAULT and paste the following:
+# GRUB_CMDLINE_LINUX_DEFAULT="console=tty0 console=ttyS0,115200 skew_tick=1 rcu_nocb_poll rcu_nocbs=1 nohz=on nohz_full=1 kthread_cpus=0 irqaffinity=0 isolcpus=managed_irq,domain,1 intel_pstate=disable nosoftlockup tsc=nowatchdog pcie_aspm=off idle=poll noapic pcie_port_pm=off pcie_aspm.policy=performance"
+# Then run:
+# sudo update-grub
+# And restart
+#
+# Note: omit "console=tty0 console=ttyS0,115200" and keep "quiet splash" if you dont want to see startup debug information
 
 # ----------------------------
 service irqbalance stop
