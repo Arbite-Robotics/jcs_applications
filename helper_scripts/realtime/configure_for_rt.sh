@@ -29,7 +29,7 @@ ifname="enp3s0" # TOPTON router
 ethtool -L $ifname combined 1
 ethtool -C $ifname rx-usecs 0 # default 3
 ethtool -C $ifname tx-usecs 0 # default 3
-sudo ethtool -K $ifname gso off gro off # generic-segmentation-offload , generic-receive-offload
+ethtool -K $ifname gso off gro off # generic-segmentation-offload , generic-receive-offload
 
 # ----------------------------
 # Elevate the priority of the network interrupt workers
