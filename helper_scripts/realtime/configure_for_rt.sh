@@ -51,9 +51,10 @@ done
 # ----------------------------
 device="xhci_hcd"
 cpu_num=3
-irq_num=$(cat /proc/interrupts | grep $device | cut -d: -f1 | sed "s/ //g")
-echo device: $device , irq: $irq_num map to cpu: $cpu_num
-echo $cpu_num > /proc/irq/$irq_num/smp_affinity_list
+for irq_num in $(cat /proc/interrupts | grep $device | cut -d: -f1 | sed "s/ //g") ; do
+        echo device: $device , irq: $irq_num map to cpu: $cpu_num
+    echo $cpu_num > /proc/irq/$irq_num/smp_affinity_list
+done
 
 # ----------------------------
 device="i915"
