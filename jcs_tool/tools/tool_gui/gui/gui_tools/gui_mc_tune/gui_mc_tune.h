@@ -77,6 +77,7 @@ private:
     std::array<test_step_response*, 2> test_step_response_;
 
     int ready_test();
+    int standby_test();
     
 };
 

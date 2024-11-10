@@ -48,7 +48,6 @@ int gui_mc_tune::render() {
             // Test failed - just return
             return jcs::RET_OK;
         }
-        is_ready_ = true;
     }
 
     if (!is_ready_) {
@@ -224,6 +223,15 @@ int gui_mc_tune::ready_test() {
     PARAM_NOTIFY_ERROR( host_->write_bool(target_device_, "host_sentry_active", false), "Parameter failed: host_sentry_active" )
     // Start the motor controller and wait for it to calibrate
     PARAM_NOTIFY_ERROR( host_->write_command(target_device_, "start"), "Parameter failed: start" )
+    is_ready_ = true;
+    helpers::sleep_ms(500);
+    return jcs::RET_OK;
+}
+
+int gui_mc_tune::standby_test() {
+    // Stop the motor controller
+    PARAM_NOTIFY_ERROR( host_->write_command(target_device_, "stop"), "Parameter failed: stop" )
+    is_ready_ = false;
     helpers::sleep_ms(500);
     return jcs::RET_OK;
 }
@@ -394,8 +402,21 @@ int gui_mc_tune::step_response_do_test(test_step_response* test) {
 
     // Sleep for a bit longer than test time
     helpers::sleep_ms(test->time_ms_ + 2000);
+
+    // NOTE: standby and ready here are workarounds for a bug.
+    // Large parameters timeout when running and at slow (eg 500Hz) data rates
+    if (standby_test() != jcs::RET_OK) {
+        clean_up();
+        return jcs::RET_ERROR;
+    }
+
     // Get oscilloscope data and plot
     PARAM_NOTIFY_CLEANUP_ERROR( host_->read_float(target_device_, "oscilloscope_channel_0",  &test->data_), "Parameter failed: oscilloscope_channel_0", clean_up(); )
+
+    if (ready_test() != jcs::RET_OK) {
+        clean_up();
+        return jcs::RET_ERROR;
+    }
 
     clean_up();
     return jcs::RET_OK;
