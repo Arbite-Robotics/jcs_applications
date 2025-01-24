@@ -1,0 +1,100 @@
+name: sg_0
+device_id: [4063311, 825250071, 842347056]
+
+# Configuration parameters to be sent to device
+parameters:
+  ########################################################################
+  # ADC channels config
+  # ADC channel 0 is connected to the load cell
+  adc_channel_0_gain: ads131m06_gain_128
+  adc_channel_0_mux:  ads131m06_mux_ainp_ainn
+
+  # Configure the other inputs, though they are not in use
+  adc_channel_1_gain: ads131m06_gain_1
+  adc_channel_1_mux:  ads131m06_mux_ainp_ainn
+
+  adc_channel_2_gain: ads131m06_gain_1
+  adc_channel_2_mux:  ads131m06_mux_ainp_ainn
+
+  adc_channel_3_gain: ads131m06_gain_1
+  adc_channel_3_mux:  ads131m06_mux_ainp_ainn
+
+  adc_channel_4_gain: ads131m06_gain_1
+  adc_channel_4_mux:  ads131m06_mux_ainp_ainn
+
+  adc_channel_5_gain: ads131m06_gain_1
+  adc_channel_5_mux:  ads131m06_mux_ainp_ainn
+
+  ########################################################################
+  # ADC filter config
+  # adc_filter:       disabled
+  adc_filter:       adc_filter_enabled
+  adc_filter_fc_hz: 100.0
+
+  ########################################################################
+  # ADC transform config
+  transform_type: linear_gain_offset
+
+  #########
+  #
+  # 10kg strain gauge
+
+  # 1) Basic transform, gains = 1000 (value is tiny, offset = 0
+  # No load on the strain gauge, vertical, z-up, then z-down
+  # transform_gain_offset_A: [1000.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+  #                           0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+  #                           0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+  #                           0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+  #                           0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
+  #                           0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+
+  # transform_gain_offset_b: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+  # Rotate the strain gauge up then down and record some data
+  # This allows us to offset for the mass of the moving part of the strain gauge itself
+  # Record values
+  # z_up    : 0.28
+  # z_down  : 0.28
+
+  # Now apply no load value as offset
+  # transform_gain_offset_A: [1000.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+  #                           0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+  #                           0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+  #                           0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+  #                           0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
+  #                           0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+
+  # transform_gain_offset_b: [-0.28, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+  # Run and check that average value is 0.
+  # In my case, average was not 0 and offset should have been -0.281
+
+  # transform_gain_offset_A: [1000.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+  #                           0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+  #                           0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+  #                           0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+  #                           0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
+  #                           0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+
+  # transform_gain_offset_b: [-0.281, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+  # 2) Suspended a proof mass of 1998g (Its a bottle of water....) off the strain gauge
+  # Mass hanging from load cell gives:
+  # Average: -0.494
+  #
+  # G = 9.80665m/2^2
+  # From above, we multiplied by 1000,
+  # So, average = -0.000494 (and offset = -0.000281)
+  # So, -0.000494 = -1998g = -19.5936867N
+  # A = 19.5936867N / -0.000494 = 39663.3334
+  # b = 39663.3334 * -0.000281 = -11.14539669
+
+  # Gives transform:
+  transform_gain_offset_A: [39663.3334, 0.0, 0.0, 0.0, 0.0, 0.0,
+                            0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+                            0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+                            0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+                            0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
+                            0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+
+  transform_gain_offset_b: [-11.14539669, 0.0, 0.0, 0.0, 0.0, 0.0]

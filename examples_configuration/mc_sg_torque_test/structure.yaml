@@ -1,0 +1,56 @@
+- name: HOST
+  type: dev_host
+  network:
+    - port: 0
+      devices:
+        - name: jc_0
+  input_signals:
+    - rate: base
+      signals:
+        # Motor current
+        - source: mc_0
+          name  : i_q
+        # Strain gauge interface channel 0
+        - source: sg_0
+          name:   sg_an_0
+
+        # Debug and info
+        - source: mc_0
+          name  : t_ave
+
+        - source: mc_0
+          name  : i_mot
+
+        - source: mc_0
+          name  : v_dc
+
+        - source: mc_0
+          name  : th_m_0
+        - source: mc_0
+          name  : w_m_0
+
+####################################################################
+- name: jc_0
+  type: dev_joint_controller
+  network:
+    - port: 0
+      devices:
+        - name: mc_0
+    - port: 1
+      devices:
+        - name: sg_0
+
+####################################################################
+- name: mc_0
+  type: dev_motor_controller
+  input_signals:
+    - rate: base
+      signals:
+        # Motor current input signal direct from host command
+        - signal_name: i_q
+          source: HOST
+          name: host_mc_q_i
+
+####################################################################
+- name: sg_0
+  type: dev_strain_gauge
