@@ -395,6 +395,8 @@ int gui_mc_tune::step_response_do_test(test_step_response* test) {
         clean_up();
         return jcs::RET_ERROR;
     }
+    // Configure
+    PARAM_NOTIFY_CLEANUP_ERROR( host_->write_uint32(target_device_,  "oscilloscope_sample_rate_hz", 30000), "Parameter failed: oscilloscope_sample_rate_hz", clean_up(); )
     // Set oscilloscope to wait
     PARAM_NOTIFY_CLEANUP_ERROR( host_->write_command(target_device_, "oscilloscope_wait_trigger"), "Parameter failed: oscilloscope_wait_trigger", clean_up(); )
     // Starting the controller starts the test
