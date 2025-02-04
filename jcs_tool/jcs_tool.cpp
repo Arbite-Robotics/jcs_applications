@@ -130,6 +130,8 @@ void* thread_host_rt(void* arg) {
     jcs_host* host = host_args->host;
 
     if (tools->step_startup_rt() != jcs::RET_OK) {
+        host_args->do_running = false;
+        std::cout<< "Error: step_startup_rt\n";
         return 0;
     }
 
@@ -182,6 +184,10 @@ void* thread_host_param(void* arg) {
 
     // Wait for host_rt cyclic to become ready
     while (!host->cyclic_ready()) {
+        if (host_args->do_running == false) {
+            // Error while waiting for startup
+            return 0;
+        }
         // Todo: Timeout.....
         jcs::external::sleep_us(1e6);
     }
