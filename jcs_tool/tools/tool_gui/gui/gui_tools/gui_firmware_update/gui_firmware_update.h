@@ -6,18 +6,20 @@
 
 #include "jcs_host.h"
 #include "gui_type_base.h"
+#include "gui_device_host_base.h"
 #include "tool_gui_settings.h"
 #include <vector>
 #include <string>
 #include "imgui.h"
 
-class gui_firmware_update : public gui_type_base {
+class gui_firmware_update : public gui_type_base, public gui_device_host_base {
 public:
     gui_firmware_update(jcs::jcs_host* host, std::string const& target_device);
     ~gui_firmware_update() {}
 
     int startup();
     int step_rt();
+    int step_rt_always();
     int render();
 
 private:

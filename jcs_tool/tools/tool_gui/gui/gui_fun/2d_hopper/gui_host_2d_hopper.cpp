@@ -100,6 +100,10 @@ int gui_host_2d_hopper::step_rt() {
     return jcs::RET_OK;
 }
 
+int gui_host_2d_hopper::step_rt_always() {
+    return jcs::RET_OK;
+}
+
 int gui_host_2d_hopper::render() {
 
     helpers::combo_select("Active hopper controller", &source_names_, &active_idx_, nullptr);

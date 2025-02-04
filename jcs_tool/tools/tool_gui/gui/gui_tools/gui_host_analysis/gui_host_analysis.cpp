@@ -111,6 +111,10 @@ int gui_host_analysis::step_rt() {
     return jcs::RET_OK;
 }
 
+int gui_host_analysis::step_rt_always() {
+    return jcs::RET_OK;
+}
+
 int gui_host_analysis::render() {
     render_status();
     ImGui::Separator();

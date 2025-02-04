@@ -4,12 +4,7 @@
 #include "gui_device_host.h"
 #include <iostream>
 #include "implot.h"
-#include "gui_plot.h"
-#include "gui_host_statistics.h"
-#include "gui_host_logger.h"
-#include "gui_host_oscilloscope.h"
-#include "gui_host_analysis.h"
-#include "gui_host_2d_hopper.h"
+
 #include "tool_gui.h"//debug
 
 #include "imgui.h"
@@ -18,12 +13,27 @@
 gui_device_host::gui_device_host(jcs::jcs_host* host, std::string const& name) :
     gui_device_base(host, name)
 {
-    gui_element_.push_back(new gui_host_logger(host_, name_));
-    gui_element_.push_back(new gui_plot(host_, name_));
-    gui_element_.push_back(new gui_host_statistics(host_, name_));
-    gui_element_.push_back(new gui_host_oscilloscope(host_, name_));
-    gui_element_.push_back(new gui_host_analysis(host_, name_));
-    gui_element_.push_back(new gui_host_2d_hopper(host_, name_));
+    gui_host_logger_ = new gui_host_logger(host_, name_);
+    gui_plot_ = new gui_plot(host_, name_);
+    gui_host_statistics_ = new gui_host_statistics(host_, name_);
+    gui_host_oscilloscope_ = new gui_host_oscilloscope(host_, name_);
+    gui_host_analysis_ = new gui_host_analysis(host_, name_);
+    gui_host_2d_hopper_ = new gui_host_2d_hopper(host_, name_);
+
+    gui_element_.push_back(static_cast<gui_type_base*>(gui_host_logger_));
+    gui_element_.push_back(static_cast<gui_type_base*>(gui_plot_));
+    gui_element_.push_back(static_cast<gui_type_base*>(gui_host_statistics_));
+    gui_element_.push_back(static_cast<gui_type_base*>(gui_host_oscilloscope_));
+    gui_element_.push_back(static_cast<gui_type_base*>(gui_host_analysis_));
+    gui_element_.push_back(static_cast<gui_type_base*>(gui_host_2d_hopper_));
+
+    gui_element_host_ptr_.push_back(static_cast<gui_device_host_base*>(gui_host_logger_));
+    gui_element_host_ptr_.push_back(static_cast<gui_device_host_base*>(gui_plot_));
+    gui_element_host_ptr_.push_back(static_cast<gui_device_host_base*>(gui_host_statistics_));
+    gui_element_host_ptr_.push_back(static_cast<gui_device_host_base*>(gui_host_oscilloscope_));
+    gui_element_host_ptr_.push_back(static_cast<gui_device_host_base*>(gui_host_analysis_));
+    gui_element_host_ptr_.push_back(static_cast<gui_device_host_base*>(gui_host_2d_hopper_));
+
 }
 
 int gui_device_host::startup() {
@@ -37,11 +47,12 @@ int gui_device_host::startup() {
 }
 
 int gui_device_host::step_rt_always() {
-    // Alway tick the logger over
-    // Logger is at index 0
-    if (static_cast<gui_host_logger*>(gui_element_[0])->step_rt_special() != jcs::RET_OK) {
-        return jcs::RET_ERROR;
+    for (int i=0; i<gui_element_host_ptr_.size(); i++) {
+        if (gui_element_host_ptr_[i]->step_rt_always() != jcs::RET_OK) {
+            return jcs::RET_ERROR;
+        }
     }
+
     return jcs::RET_OK;
 }
 

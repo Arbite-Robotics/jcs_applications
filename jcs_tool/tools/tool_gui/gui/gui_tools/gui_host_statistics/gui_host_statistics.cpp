@@ -32,6 +32,10 @@ int gui_host_statistics::step_rt() {
     return jcs::RET_OK;
 }
 
+int gui_host_statistics::step_rt_always() {
+    return jcs::RET_OK;
+}
+
 int gui_host_statistics::render() {
 
     static ImGuiTableFlags table_flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;

@@ -348,3 +348,6 @@ int gui_plot::step_rt() {
     return jcs::RET_OK;    
 }
 
+int gui_plot::step_rt_always() {
+    return jcs::RET_OK;
+}

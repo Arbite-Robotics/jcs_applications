@@ -31,6 +31,7 @@ tool_gui::tool_gui(std::string name, jcs::jcs_host* host) :
     // tool gui does not use mem lock just yet
     jcs_tool_if(name, host, false)
 {
+    host_ptr_ = nullptr;
     device_select_idx_ = 0;
     run_status_ = run_status::stopped;
 }
@@ -41,12 +42,17 @@ int tool_gui::load_config(std::string tool_config) {
 
 
 int tool_gui::step_startup_rt() {
+    // if (host_ptr_ == nullptr) {
+    //     return jcs::RET_ERROR;
+    // }
     return jcs::RET_OK;
 }
 
 int tool_gui::step_rt() {
-    // Always tick the host logger over
-    if (static_cast<gui_device_host*>(store_[0])->step_rt_always() != jcs::RET_OK) {
+    // Host might have things to always tick over
+    // Note: Ok to call on host_ptr_ as this function will not be called
+    // until host_ptr_ is attached and store_ is populated
+    if (host_ptr_->step_rt_always() != jcs::RET_OK) {
         return jcs::RET_ERROR;
     }
     // Exchange data with graph storage
@@ -135,7 +141,10 @@ int tool_gui::step_parameter_startup() {
 void tool_gui::build_store() {
     for (int i=0; i<device_tree_->size(); i++) {
         // Add any devices to the store
-        if (device_tree_->at(i).node_type == "dev_host")                                 { store_.push_back(new gui_device_host(host_, device_tree_->at(i).name)); }
+        if (device_tree_->at(i).node_type == "dev_host") {
+            store_.push_back(new gui_device_host(host_, device_tree_->at(i).name));
+            host_ptr_ = static_cast<gui_device_host*>(store_[0]);
+        }
         else if (device_tree_->at(i).node_type == "dev_joint_controller")                { store_.push_back(new gui_device_joint_controller(host_, device_tree_->at(i).name)); }
         else if (device_tree_->at(i).node_type == "dev_motor_controller")                { store_.push_back(new gui_device_motor_controller(host_, device_tree_->at(i).name)); }
         else if (device_tree_->at(i).node_type == "dev_encoder_absolute")                { store_.push_back(new gui_device_encoder_absolute(host_, device_tree_->at(i).name)); }

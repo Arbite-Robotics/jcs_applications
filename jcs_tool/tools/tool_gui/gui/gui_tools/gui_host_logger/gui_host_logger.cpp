@@ -68,7 +68,8 @@ int gui_host_logger::step_rt() {
     return jcs::RET_OK;
 }
 
-int gui_host_logger::step_rt_special() {
+// int gui_host_logger::step_rt_special() {
+int gui_host_logger::step_rt_always() {
     // Only currently supporting base rates
     host_->sig_output_get_rt(0, &f32_osignal_store_);
 

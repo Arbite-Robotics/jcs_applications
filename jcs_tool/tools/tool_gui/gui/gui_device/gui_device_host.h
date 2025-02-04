@@ -6,9 +6,17 @@
 
 #include <string>
 #include "gui_device_base.h"
+#include "gui_device_host_base.h"
 #include "jcs_host.h"
 
-class gui_device_host : public gui_device_base {
+#include "gui_plot.h"
+#include "gui_host_statistics.h"
+#include "gui_host_logger.h"
+#include "gui_host_oscilloscope.h"
+#include "gui_host_analysis.h"
+#include "gui_host_2d_hopper.h"
+
+class gui_device_host : public gui_device_base, public gui_device_host_base {
 public:
     gui_device_host(jcs::jcs_host* host, std::string const& name);
     ~gui_device_host() {}
@@ -18,5 +26,15 @@ public:
     int render(); 
 
     int step_rt_always();
+
+private:
+    std::vector<gui_device_host_base*> gui_element_host_ptr_;
+
+    gui_host_logger* gui_host_logger_;
+    gui_plot* gui_plot_;
+    gui_host_statistics* gui_host_statistics_;
+    gui_host_oscilloscope* gui_host_oscilloscope_;
+    gui_host_analysis* gui_host_analysis_;
+    gui_host_2d_hopper* gui_host_2d_hopper_;
 };
 #endif

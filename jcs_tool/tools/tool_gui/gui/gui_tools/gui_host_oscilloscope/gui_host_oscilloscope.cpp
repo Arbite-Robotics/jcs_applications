@@ -136,6 +136,10 @@ int gui_host_oscilloscope::step_rt() {
     return jcs::RET_OK;
 }
 
+int gui_host_oscilloscope::step_rt_always() {
+    return jcs::RET_OK;
+}
+
 int gui_host_oscilloscope::render() {
     render_status();
     ImGui::Separator();

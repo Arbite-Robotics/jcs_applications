@@ -29,6 +29,10 @@ int gui_firmware_update::step_rt() {
     return jcs::RET_OK;
 }
 
+int gui_firmware_update::step_rt_always() {
+    return jcs::RET_OK;
+}
+
 int gui_firmware_update::render() {
 
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;

@@ -16,6 +16,7 @@
 #include <chrono>
 
 #include "gui_device_base.h"
+#include "gui_device_host.h"
 
 class tool_gui : public jcs_tool_if {
 public:
@@ -39,6 +40,8 @@ private:
 
     std::vector<jcs::jcs_device>* device_tree_;
     std::vector<gui_device_base*> store_;
+    gui_device_host* host_ptr_;
+
     // Device selection helpers
     int device_select_idx_;
 

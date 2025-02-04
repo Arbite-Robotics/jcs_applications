@@ -6,15 +6,17 @@
 
 #include "jcs_host.h"
 #include "gui_type_base.h"
+#include "gui_device_host_base.h"
 #include "helpers.h"
 
-class gui_host_statistics : public gui_type_base {
+class gui_host_statistics : public gui_type_base, public gui_device_host_base {
 public:
     gui_host_statistics(jcs::jcs_host* host, std::string const& target_device);
     ~gui_host_statistics() {}
 
     int startup();
     int step_rt();
+    int step_rt_always();
     int render();
 
 private:
