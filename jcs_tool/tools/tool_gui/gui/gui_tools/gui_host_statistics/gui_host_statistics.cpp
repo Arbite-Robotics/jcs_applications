@@ -8,39 +8,52 @@
 #include <cmath>
 #include <iostream>
 #include "helpers.h"
+#include "jcs_user_external.h"
 
 #include "jcs_dev_motor_controller.h"
 
 gui_host_statistics::gui_host_statistics(jcs::jcs_host* host, std::string const& target_device) :
     gui_type_base("Statistics", host, target_device),
     to_mean_buffer_(2000),
-    to_variance_buffer_(2000),
     cycle_buffer_(2000),
-    data_exchange_buffer_(2000)
-{
-    t_ = 0.0f;
-}
+    data_exchange_buffer_(2000),
+    max_history_s_(30),
+    fit_x_(true), fit_y_(true)
+{}
 
 int gui_host_statistics::startup() {
+    int new_buffer_size = max_history_s_ * (int)host_->base_frequency_get();
+
+    cycle_buffer_.update_size(new_buffer_size);
+    data_exchange_buffer_.update_size(new_buffer_size);
+    to_mean_buffer_.update_size(new_buffer_size);
+
+    t_start_ns_ = (double)jcs::external::time_now_ns();
     return jcs::RET_OK;
 }
 
 int gui_host_statistics::step_rt() {
-    // Get stats
-    timing_ = host_->statistics_timing_get();
-    health_ = host_->statistics_health_get();
     return jcs::RET_OK;
 }
 
 int gui_host_statistics::step_rt_always() {
+    t_s_ = (float)(((double)jcs::external::time_now_ns() - t_start_ns_)*1e-9);
+    // Get stats
+    timing_ = host_->statistics_timing_get();
+    health_ = host_->statistics_health_get();
+
+    // Populate plots
+    // Note: Not caring about locking or anything here. Just go for gold
+    cycle_buffer_.add_point(t_s_, (float)timing_.total_cycle_time_ns/1000.0f);
+    data_exchange_buffer_.add_point(t_s_, (float)timing_.data_exchange_time_ns/1000.0f);
+
+    to_mean_buffer_.add_point(t_s_, (float)health_.thread_offset.mean);
     return jcs::RET_OK;
 }
 
 int gui_host_statistics::render() {
 
     static ImGuiTableFlags table_flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
-
-    t_ += ImGui::GetIO().DeltaTime;
 
     ImGui::Text("Times");
     if (ImGui::BeginTable("Times", 2, table_flags)) {
@@ -68,21 +81,20 @@ int gui_host_statistics::render() {
         ImGui::EndTable();
     }
 
-    // Pretty plots
-    cycle_buffer_.add_point(t_, (float)timing_.total_cycle_time_ns/1000.0f);
-    data_exchange_buffer_.add_point(t_, (float)timing_.data_exchange_time_ns/1000.0f);
+    ImGui::Checkbox("Fit T axis", &fit_x_);
+    ImGui::SameLine();
+    ImGui::Checkbox("Fit Y axis", &fit_y_);
 
-    static ImPlotAxisFlags plot_flags = ImPlotFlags_NoFrame | ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_RangeFit;
-    float const history = 30.0f;
+    ImPlotAxisFlags x_flags = fit_x_ ? ImPlotAxisFlags_AutoFit : 0;
+    ImPlotAxisFlags y_flags = fit_y_ ? ImPlotAxisFlags_AutoFit : 0;
 
-    if (ImPlot::BeginPlot("Times plots")) {
-        ImPlot::SetupAxes(nullptr, nullptr, plot_flags, plot_flags);
-        ImPlot::SetupAxisLimits(ImAxis_X1, t_ - history, t_, ImGuiCond_Always);
-        // ImPlot::SetupAxisLimits(ImAxis_X1, t_, t_, ImGuiCond_Always);
-        // ImPlot::SetupAxisLimits(ImAxis_Y1, -10.0, 10.0);
+    if (ImPlot::BeginPlot("Times")) {
+        ImPlot::SetupAxes("t", nullptr, x_flags, y_flags);
+        ImPlot::SetupAxisLimits(ImAxis_X1, t_s_ - max_history_s_, t_s_, ImGuiCond_Once);
         ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
-        ImPlot::PlotLine("Cycle Time", &cycle_buffer_.data_[0].x, &cycle_buffer_.data_[0].y, cycle_buffer_.data_.size(), 0, cycle_buffer_.offset_, 2*sizeof(float));
-        ImPlot::PlotLine("Data Exchange Time", &data_exchange_buffer_.data_[0].x, &data_exchange_buffer_.data_[0].y, data_exchange_buffer_.data_.size(), 0, data_exchange_buffer_.offset_, 2*sizeof(float));
+
+        cycle_buffer_.plot_line("Cycle Time");
+        data_exchange_buffer_.plot_line("Data Exchange Time");
 
         ImPlot::EndPlot();
     }
@@ -186,20 +198,14 @@ int gui_host_statistics::render() {
     }
 
     // More pretty plots
-    if (ImPlot::BeginPlot("Thread offset mean/variance")) {
+    if (ImPlot::BeginPlot("Thread offset timing")) {
         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
 
-        ImPlot::SetupAxes(nullptr, nullptr, plot_flags, plot_flags);
-        ImPlot::SetupAxisLimits(ImAxis_X1, t_ - history, t_, ImGuiCond_Always);
+        ImPlot::SetupAxes("t", nullptr, x_flags, y_flags);
+        ImPlot::SetupAxisLimits(ImAxis_X1, t_s_ - max_history_s_, t_s_, ImGuiCond_Once);
         ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
 
-        to_mean_buffer_.add_point(t_, (float)health_.thread_offset.mean);
-
-        float half_var = (float)health_.thread_offset.variance /2.0f;
-        to_variance_buffer_.add_point((float)health_.thread_offset.mean-half_var, (float)health_.thread_offset.mean+half_var);
-
-        ImPlot::PlotLine("Mean", &to_mean_buffer_.data_[0].x, &to_mean_buffer_.data_[0].y, to_mean_buffer_.data_.size(), 0, to_mean_buffer_.offset_, 2*sizeof(float));
-        ImPlot::PlotShaded("Variance", &to_mean_buffer_.data_[0].x, &to_variance_buffer_.data_[0].x, &to_variance_buffer_.data_[0].y, to_variance_buffer_.data_.size(), 0, to_variance_buffer_.offset_, 2*sizeof(float));
+        to_mean_buffer_.plot_line("Mean");
 
         ImPlot::PopStyleVar();
         ImPlot::EndPlot();

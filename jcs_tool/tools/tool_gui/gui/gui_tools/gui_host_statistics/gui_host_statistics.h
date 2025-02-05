@@ -22,11 +22,15 @@ public:
 private:
     // Some nice statistics plots
     helpers::scrolling_buffer to_mean_buffer_;
-    helpers::scrolling_buffer to_variance_buffer_;
 
     helpers::scrolling_buffer cycle_buffer_;
     helpers::scrolling_buffer data_exchange_buffer_;
-    float t_;
+    float t_s_;
+    double t_start_ns_;
+
+    int max_history_s_;
+    bool fit_y_;
+    bool fit_x_;
 
     jcs::statistics_timing timing_;
     jcs::statistics_health health_;
