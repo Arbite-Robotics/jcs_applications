@@ -152,7 +152,7 @@ int gui_host_analysis::render_plot() {
 int gui_host_analysis::render_interface() {
     ImGui::Text("Analysis Settings");
 
-    ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+    ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EscapeClearsAll;
 
     // Storage length
     ImGui::Text("Base sample frequency: %u", host_->base_frequency_get());

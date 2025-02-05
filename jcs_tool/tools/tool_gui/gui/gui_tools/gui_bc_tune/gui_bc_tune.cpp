@@ -67,13 +67,13 @@ void gui_bc_tune::test_r_get_parameters(std::string const& channel, test_r* stor
 
     {
         float value = storage->amplitude;
-        if (ImGui::InputFloat("Amplitude (V)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("Amplitude (V)", &value, 0.1f, 1.0f, "%.6f",  ImGuiInputTextFlags_EscapeClearsAll)) {
             storage->amplitude = value;
         }
     }
     {
         int value = (int)storage->time_ms;
-        if (ImGui::InputInt("Time (ms)", &value, 1, 10, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputInt("Time (ms)", &value, 1, 10, ImGuiInputTextFlags_EscapeClearsAll)) {
             storage->time_ms = (uint32_t)value;
         }
     }
@@ -89,25 +89,25 @@ void gui_bc_tune::test_l_get_parameters(std::string const& channel, test_l* stor
 
     {
         float value = storage->bias;
-        if (ImGui::InputFloat("Bias (V)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("Bias (V)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             storage->bias = value;
         }
     }
     {
         float value = storage->amplitude;
-        if (ImGui::InputFloat("Amplitude (V)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("Amplitude (V)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             storage->amplitude = value;
         }
     }
     {
         float value = storage->frequency;
-        if (ImGui::InputFloat("Frequency (Hz)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("Frequency (Hz)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             storage->frequency = value;
         }
     }
     {
         int value = (int)storage->time_ms;
-        if (ImGui::InputInt("Time (ms)", &value, 1, 10, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputInt("Time (ms)", &value, 1, 10, ImGuiInputTextFlags_EscapeClearsAll)) {
             storage->time_ms = (uint32_t)value;
         }
     }

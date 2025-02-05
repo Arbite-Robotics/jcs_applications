@@ -180,7 +180,7 @@ int gui_host_oscilloscope::render_plot() {
 int gui_host_oscilloscope::render_interface() {
     ImGui::Text("Oscilloscope Settings");
 
-    ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+    ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EscapeClearsAll;
 
     // Storage length
     ImGui::Text("Base sample frequency: %u", host_->base_frequency_get());
@@ -204,7 +204,7 @@ int gui_host_oscilloscope::render_interface() {
 
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     if (ImGui::BeginTabBar("Control_sources", tab_bar_flags)) {
-        ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+        ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EscapeClearsAll;
         
         if (ImGui::BeginTabItem("Trigger Output Signal")) {
             helpers::combo_select("Trigger Source", &f32_output_signal_names_, &trigger_.osig_source_combo_idx, nullptr);

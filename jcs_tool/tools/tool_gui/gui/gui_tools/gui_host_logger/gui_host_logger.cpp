@@ -125,7 +125,7 @@ int gui_host_logger::render_plot() {
 int gui_host_logger::render_interface() {
     ImGui::Text("logger Settings");
 
-    ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+    ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EscapeClearsAll;
     // Storage length
     ImGui::Text("Base sample frequency:  %u", host_->base_frequency_get());
     ImGui::Text("Total sampled points:   %u", host_->base_frequency_get() * sample_time_);

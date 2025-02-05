@@ -136,7 +136,7 @@ void param_float32::render(std::string const& target_device) {
     ImGui::PushItemWidth(-FLT_MIN); // Right aligned
     {
         float value = write_val_;
-        if (ImGui::InputFloat("##Write", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("##Write", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             write_val_ = value;
         }
     }
@@ -301,7 +301,7 @@ void param_uint32::render(std::string const& target_device) {
     ImGui::PushItemWidth(-FLT_MIN); // Right aligned
     {
         int value = (int)write_val_;
-        if (ImGui::InputInt("##Write", &value, 1, 10, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputInt("##Write", &value, 1, 10, ImGuiInputTextFlags_EscapeClearsAll)) {
             write_val_ = (uint32_t)value;
         }
     }
@@ -375,7 +375,7 @@ void param_uint16::render(std::string const& target_device) {
     ImGui::PushItemWidth(-FLT_MIN); // Right aligned
     {
         int value = (int)write_val_;
-        if (ImGui::InputInt("##Write", &value, 1, 10, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputInt("##Write", &value, 1, 10, ImGuiInputTextFlags_EscapeClearsAll)) {
             write_val_ = (uint16_t)value;
         }
     }
@@ -449,7 +449,7 @@ void param_uint8::render(std::string const& target_device) {
     ImGui::PushItemWidth(-FLT_MIN); // Right aligned
     {
         int value = (int)write_val_;
-        if (ImGui::InputInt("##Write", &value, 1, 10, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputInt("##Write", &value, 1, 10, ImGuiInputTextFlags_EscapeClearsAll)) {
             write_val_ = (uint8_t)value;
         }
     }

@@ -273,13 +273,13 @@ int gui_mc_cogging::render() {
     ImGui::Text("Cogging compensator activation range");
     {
         float value = cogging_compensator_upper_w_m_low_;
-        if (ImGui::InputFloat("cogging_compensator_upper_w_m_low", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("cogging_compensator_upper_w_m_low", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             cogging_compensator_upper_w_m_low_ = value;
         }
     }
     {
         float value = cogging_compensator_upper_w_m_high_;
-        if (ImGui::InputFloat("cogging_compensator_upper_w_m_high", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("cogging_compensator_upper_w_m_high", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             cogging_compensator_upper_w_m_high_ = value;
         }
     }

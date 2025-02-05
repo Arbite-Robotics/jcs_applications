@@ -65,7 +65,7 @@ int gui_oscilloscope::render_plot() {
 
 int gui_oscilloscope::render_interface() {
     ImGui::Text("Oscilloscope Settings");
-    ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+    ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EscapeClearsAll;
     // Sample rate
     {
         int sample_temp = sample_rate_;

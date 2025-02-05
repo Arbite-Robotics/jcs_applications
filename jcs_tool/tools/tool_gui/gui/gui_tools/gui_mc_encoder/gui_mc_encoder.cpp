@@ -71,13 +71,13 @@ int gui_mc_encoder::render_zero_encoder() {
     ImGui::Text("- Ensure anti-cogging feature is disabled.");
     {
         float value = i_d_alignment_;
-        if (ImGui::InputFloat("D-Axis alignment current (A)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("D-Axis alignment current (A)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             i_d_alignment_ = value;
         }
     }
     {
         float value = i_d_alignment_ramp_time_ms_;
-        if (ImGui::InputFloat("D-Axis alignment ramp up time (ms)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("D-Axis alignment ramp up time (ms)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             i_d_alignment_ramp_time_ms_ = value;
         }
     }

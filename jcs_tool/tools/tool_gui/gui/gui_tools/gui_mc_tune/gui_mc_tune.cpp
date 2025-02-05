@@ -32,7 +32,7 @@ int gui_mc_tune::render() {
 
     // {
     //     int pp_temp = (int)pole_pairs_;
-    //     if (ImGui::InputInt("Pole Pairs", &value, 1, 10, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+    //     if (ImGui::InputInt("Pole Pairs", &value, 1, 10, ImGuiInputTextFlags_EscapeClearsAll)) {
     //         pole_pairs_ = (uint32_t)value;
     //     }
     // }
@@ -100,7 +100,7 @@ int gui_mc_tune::render() {
 
     {
         float value = i_ctl_bw_hz_;
-        if (ImGui::InputFloat("Current controller bandwidth (Hz)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("Current controller bandwidth (Hz)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             i_ctl_bw_hz_ = value;
         }
     }
@@ -149,13 +149,13 @@ void gui_mc_tune::compute_controller_gains(std::string const& axis, test_r* r_st
     ImGui::Text("Current controller axis: %s", axis.c_str());
     {
         float value = gains->kp;
-        if (ImGui::InputFloat("Kp", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("Kp", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             gains->kp = value;
         }
     }
     {
         float value = gains->ki;
-        if (ImGui::InputFloat("Ki", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("Ki", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             gains->ki = value;
         }
     }
@@ -169,13 +169,13 @@ void gui_mc_tune::test_r_get_parameters(std::string const& axis, test_r* storage
 
     {
         float value = storage->amplitude;
-        if (ImGui::InputFloat("Amplitude (V)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("Amplitude (V)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             storage->amplitude = value;
         }
     }
     {
         int value = (int)storage->time_ms;
-        if (ImGui::InputInt("Time (ms)", &value, 1, 10, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputInt("Time (ms)", &value, 1, 10, ImGuiInputTextFlags_EscapeClearsAll)) {
             storage->time_ms = (uint32_t)value;
         }
     }
@@ -191,25 +191,25 @@ void gui_mc_tune::test_l_get_parameters(std::string const& axis, test_l* storage
 
     {
         float value = storage->bias;
-        if (ImGui::InputFloat("Bias (V)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("Bias (V)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             storage->bias = value;
         }
     }
     {
         float value = storage->amplitude;
-        if (ImGui::InputFloat("Amplitude (V)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("Amplitude (V)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             storage->amplitude = value;
         }
     }
     {
         float value = storage->frequency;
-        if (ImGui::InputFloat("Frequency (Hz)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("Frequency (Hz)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             storage->frequency = value;
         }
     }
     {
         int value = (int)storage->time_ms;
-        if (ImGui::InputInt("Time (ms)", &value, 1, 10, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputInt("Time (ms)", &value, 1, 10, ImGuiInputTextFlags_EscapeClearsAll)) {
             storage->time_ms = (uint32_t)value;
         }
     }
@@ -351,13 +351,13 @@ void gui_mc_tune::step_response_get_parameters(test_step_response* test) {
 
     {
         float value = test->amplitude_;
-        if (ImGui::InputFloat("Amplitude (A)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat("Amplitude (A)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             test->amplitude_ = value;
         }
     }
     {
         int value = (int)test->time_ms_;
-        if (ImGui::InputInt("Time (ms)", &value, 1, 10, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputInt("Time (ms)", &value, 1, 10, ImGuiInputTextFlags_EscapeClearsAll)) {
             test->time_ms_ = (uint32_t)value;
         }
     }
