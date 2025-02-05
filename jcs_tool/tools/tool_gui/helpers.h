@@ -105,6 +105,17 @@ namespace helpers {
                 offset_  = 0;
             }
         }
+
+        void plot_line(std::string const& name) {
+            ImGui::PushID(name.c_str());
+            if (data_.size() == 0) {
+                ImPlotPoint zero = ImPlotPoint(0.0f, 0.0f);
+                ImPlot::PlotLine(name.c_str(), &zero.x, &zero.y, 1, 0, 0, 2*sizeof(float));
+            } else {
+                ImPlot::PlotLine(name.c_str(), &data_[0].x, &data_[0].y, data_.size(), 0, offset_, 2*sizeof(float));
+            }
+            ImGui::PopID();
+        }
     };
 
     // Normalise [-pi, pi]
