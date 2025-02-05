@@ -88,7 +88,7 @@ int gui_host_statistics::render() {
     ImPlotAxisFlags x_flags = fit_x_ ? ImPlotAxisFlags_AutoFit : 0;
     ImPlotAxisFlags y_flags = fit_y_ ? ImPlotAxisFlags_AutoFit : 0;
 
-    if (ImPlot::BeginPlot("Times")) {
+    if (ImPlot::BeginPlot("Times plot")) {
         ImPlot::SetupAxes("t", nullptr, x_flags, y_flags);
         ImPlot::SetupAxisLimits(ImAxis_X1, t_s_ - max_history_s_, t_s_, ImGuiCond_Once);
         ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
@@ -198,7 +198,7 @@ int gui_host_statistics::render() {
     }
 
     // More pretty plots
-    if (ImPlot::BeginPlot("Thread offset timing")) {
+    if (ImPlot::BeginPlot("Thread offset plot")) {
         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
 
         ImPlot::SetupAxes("t", nullptr, x_flags, y_flags);
