@@ -102,6 +102,19 @@ namespace helpers {
             }
         }
         
+        ImVec2 operator[](size_t index) {
+            if (data_.empty()) {
+                return ImVec2(0.0f, 0.0f);
+            } else if (data_.size() < max_size_ || offset_ == 0) {
+                if (index > data_.size()-1) {
+                    return data_.back();
+                }
+                return data_[index];
+            } else {
+                return data_[ (offset_ + index) % max_size_ ];
+            }
+        }
+
         void erase() {
             if (data_.size() > 0) {
                 data_.shrink(0);
