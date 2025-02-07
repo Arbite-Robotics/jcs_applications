@@ -188,3 +188,24 @@ void helpers::plot_measurement::update_storage_length(int sample_time_s, int sam
     y_.resize(new_sample_length);
     update_sample_rate(sample_rate_hz);
 }
+
+
+helpers::ma_filter::ma_filter(double cutoff_hz, double dt) {
+    u_prev_ = 0.0;
+    dt_ = dt;
+    cutoff_set(cutoff_hz);
+}
+helpers::ma_filter::~ma_filter() {}
+
+double helpers::ma_filter::step(double value) {
+    double delta = value - u_prev_;
+    double u_temp = u_prev_ + alpha_ * delta;
+    u_prev_ = u_temp;
+    return u_temp;
+}
+void helpers::ma_filter::seed(double seed_value) {
+    u_prev_ = seed_value;
+}
+void helpers::ma_filter::cutoff_set(double cutoff_hz) {
+    alpha_ = (dt_ / (dt_ + 1.0 / (2.0 * M_PI * cutoff_hz)));
+}

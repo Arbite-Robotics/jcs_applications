@@ -231,6 +231,21 @@ namespace helpers {
             return kp*p_error + kd*d_error;
         }
     };
+
+    // Simple moving average filter
+    class ma_filter {
+    public:
+        ma_filter(double cutoff_hz, double dt);
+        ~ma_filter();
+
+        double step(double value);
+        void seed(double seed_value);
+        void cutoff_set(double cutoff_hz);
+    private:
+        double alpha_;
+        double u_prev_;
+        double dt_;
+    };
 } // End namespace helpers
 
 
