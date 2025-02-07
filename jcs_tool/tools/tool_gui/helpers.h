@@ -8,7 +8,7 @@
 #include <string>
 #include "imgui.h"
 #include "implot.h"
-
+#include "jcs_host.h"
 #include <iostream>
 
 
@@ -47,7 +47,10 @@
 namespace helpers {
     void HelpMarker(const char* desc);
 
+    // Combo signal selection helpers
     void combo_select(std::string const& name, std::vector<std::string> const* sources, int* current_idx, std::string* dest);
+    int build_output_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_output_signal_names);
+    int build_input_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_input_signal_names);
 
     // utility structure for realtime plot
     struct scrolling_buffer {

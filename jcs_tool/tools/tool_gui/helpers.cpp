@@ -43,6 +43,45 @@ void helpers::combo_select(std::string const& name, std::vector<std::string> con
     ImGui::PopID();
 }
 
+int helpers::build_output_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_output_signal_names) {
+    // Build a list of all available output float type, base rate signals
+    for (int i=0; i<host->sig_output_sz_unsafe_rt(jcs::signal_type::float32_s, 0); i++) {
+        std::string node_name;
+        if (host->sig_output_node_name_get(jcs::signal_type::float32_s, 0, i, &node_name) != jcs::RET_OK) {
+            std::cout << "build_output_list_names: Error getting node name for output signal at index " << i << "\n";
+            return jcs::RET_ERROR;
+        }
+        std::string name;
+        if (host->sig_output_name_get(jcs::signal_type::float32_s, 0, i, &name) != jcs::RET_OK) {
+            std::cout << "build_output_list_names: Error getting output signal name at index " << i << "\n";
+            return jcs::RET_ERROR;
+        }
+        // Name will be node name + signal name
+        f32_output_signal_names->push_back(node_name + "::" + name);
+    }
+    return jcs::RET_OK;
+}
+
+int helpers::build_input_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_input_signal_names) {
+    // Build a list of all available input float type, base rate signals
+    for (int i=0; i<host->sig_input_sz_unsafe_rt(jcs::signal_type::float32_s, 0); i++) {
+        std::string node_name;
+        if (host->sig_input_node_name_get(jcs::signal_type::float32_s, 0, i, &node_name) != jcs::RET_OK) {
+            std::cout << "build_input_signal_names_list: Error getting node name for input signal at index " << i << "\n";
+            return jcs::RET_ERROR;
+        }
+        std::string name;
+        if (host->sig_input_name_get(jcs::signal_type::float32_s, 0, i, &name) != jcs::RET_OK) {
+            std::cout << "build_input_signal_names_list: Error getting input signal name at index " << i << "\n";
+            return jcs::RET_ERROR;
+        }
+        // Name will be node name + signal name
+        f32_input_signal_names->push_back(node_name + "::" + name);
+    }
+    return jcs::RET_OK;
+}
+
+
 // Normalise [-pi, pi]
 double helpers::angle_norm_pipi(double angle) {
     double angle_norm = angle;
