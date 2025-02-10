@@ -145,16 +145,12 @@ int gui_mc_cogging::render() {
         case behaviour::standby_s:
             initialise();
             // Start JCS host
-            if (host_->ready_devices() != jcs::RET_OK) {
+            if (gui_if_->start() != jcs::RET_OK) {
                 state_ = behaviour::standby_s;
                 break;
             }
             // Get the zero position at which compensation takes place
             if (host_->read_float(target_device_, "encoder_0_position_offset", &compensated_at_zero_pos_) != jcs::RET_OK) {
-                state_ = behaviour::standby_s;
-                break;
-            }
-            if (host_->start() != jcs::RET_OK) {
                 state_ = behaviour::standby_s;
                 break;
             }
@@ -176,10 +172,7 @@ int gui_mc_cogging::render() {
         case behaviour::wait_position_s:
         case behaviour::rotate_s:
         case behaviour::finish_s: 
-            if (host_->stop() != jcs::RET_OK) {
-                state_ = behaviour::standby_s;
-                break;
-            }
+            gui_if_->stop();
             state_ = behaviour::standby_s;
             break;
         }
@@ -199,10 +192,7 @@ int gui_mc_cogging::render() {
 
         case behaviour::finish_s:
             ImGui::Text("RUNNING"); 
-            if (host_->stop() != jcs::RET_OK) {
-                state_ = behaviour::standby_s;
-                break;
-            }
+            gui_if_->stop();
             compute_outputs();
             state_ = behaviour::standby_s;
             break;
@@ -233,7 +223,6 @@ int gui_mc_cogging::render() {
 
         ImGui::EndTable();
     }
-
     {
         float progress = (float)rotation_tick_ / (float)rotation_steps_; 
         char buf[32];
