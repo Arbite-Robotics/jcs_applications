@@ -60,8 +60,6 @@ private:
 
     std::vector<float> f32_osignal_store_;
     std::vector<float> f32_isignal_store_;
-    std::vector<std::string> f32_output_signal_names_;
-    std::vector<std::string> f32_input_signal_names_;
 
     // Trigger
     enum class control_type {
