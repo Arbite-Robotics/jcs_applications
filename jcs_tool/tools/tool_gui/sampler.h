@@ -14,11 +14,11 @@
 // multi channel sampler
 class sampler {
 public:
-    sampler(jcs::jcs_host* host, int const n_channel);
+    sampler(int const base_frequency_hz, std::vector<std::string>* output_signal_names, int const n_channels, int const inital_sample_rate_hz, int const initial_sample_time_s);
     ~sampler();
 
     int startup(double time_now_ns);
-    void step_rt(double time_now_ns);
+    void step_rt(double time_now_ns, std::vector<float>* f32_output_signal_store);
 
     void render_status();
     void render_interface();
@@ -43,11 +43,9 @@ private:
     };
     sampler_state state_;
 
-    jcs::jcs_host* host_;
+    std::vector<std::string>* f32_output_signal_names_;
 
-    std::vector<std::string> f32_output_signal_names_;
-    std::vector<float> f32_output_signal_store_;
-
+    int base_frequency_hz_;
     int sample_rate_hz_;
     int sample_tick_max_;
     int sample_tick_;

@@ -6,17 +6,18 @@
 #include <iostream>
 #include "ImGuiFileDialog.h"
 
-sampler::sampler(jcs::jcs_host* host, int const n_channel) :
-    host_(host),
+sampler::sampler(int const base_frequency_hz, std::vector<std::string>* output_signal_names, int const n_channels, int const inital_sample_rate_hz, int const initial_sample_time_s) :
+    base_frequency_hz_(base_frequency_hz),
+    f32_output_signal_names_(output_signal_names),
     state_(sampler_state::off_s),
     using_filter_(true),
-    sample_rate_hz_(100),
+    sample_rate_hz_(inital_sample_rate_hz),
     storage_length_(1000),
-    sample_time_s_(10)
+    sample_time_s_(initial_sample_time_s)
 {
     // Channels NOT initialised here. We need true dt
     // however - size the vector
-    channels_.resize(n_channel);
+    channels_.resize(n_channels);
 }
 
 sampler::~sampler() {
@@ -28,18 +29,12 @@ sampler::~sampler() {
 }
 
 int sampler::startup(double time_now_ns) {
-    // Confiugure line storage
-    f32_output_signal_store_.resize(host_->sig_output_sz_unsafe_rt(jcs::signal_type::float32_s, 0));
-    // Build combo box output names list
-    if (helpers::build_output_signal_names_list(host_, &f32_output_signal_names_) != jcs::RET_OK) {
-        return jcs::RET_ERROR;
-    }
     // Build the channels first
     for (int i=0; i<channels_.size(); i++) {
         channels_[i] = new channel("Channel " + std::to_string(i), 
                                    "None", 
                                    1000,
-                                   static_cast<double>(host_->base_frequency_get()),
+                                   static_cast<double>(base_frequency_hz_),
                                    sample_rate_hz_);
     }
     // Configure the sampler
@@ -47,7 +42,7 @@ int sampler::startup(double time_now_ns) {
         return jcs::RET_ERROR;
     }
     // Start the channels
-    channels_startup(f32_output_signal_names_[0], storage_length_, sample_rate_hz_);
+    channels_startup(f32_output_signal_names_->at(0), storage_length_, sample_rate_hz_);
 
     t_start_ns_ = time_now_ns;
 
@@ -58,9 +53,7 @@ int sampler::startup(double time_now_ns) {
 // Using dearimgui scrolling buffer which stores x,y points.
 // This means extra memory will be used for storing time (stored in x) multiple times.
 // But this allows us to use striding, which is the most performant way to plot
-void sampler::step_rt(double time_now_ns) {
-
-    host_->sig_output_get_rt(0, &f32_output_signal_store_);
+void sampler::step_rt(double time_now_ns, std::vector<float>* f32_output_signal_store) {
 
     switch (state_) {
         default:
@@ -69,12 +62,12 @@ void sampler::step_rt(double time_now_ns) {
 
         case sampler_state::filter_seed_s:
             sample_tick_ = 0;
-            channels_seed_filter(&f32_output_signal_store_);
+            channels_seed_filter(f32_output_signal_store);
             state_ = sampler_state::sampling_s;
 
             // fall through
         case sampler_state::sampling_s:
-            channels_step_filter(&f32_output_signal_store_);
+            channels_step_filter(f32_output_signal_store);
             sample_tick_++;
             if (sample_tick_ < sample_tick_max_) {
                 break;
@@ -97,18 +90,19 @@ void sampler::render_status() {
             break;
         case sampler_state::filter_seed_s:
         case sampler_state::sampling_s:
-            ImGui::TextColored(ImVec4(0.5f, 0.0f, 0.0f, 1.0f), "Sampling");
+            ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0f, 1.0f), "Sampling");
             break;
     }
 }
 void sampler::render_interface() {
     ImGui::Text("Sampler Settings");
+    ImGui::Separator();
+    ImGui::Text("Base frequency: %uHz", base_frequency_hz_);
     // Get parameters
     {
         int value = sample_rate_hz_;
         ImGui::InputInt("Sample rate (Hz)", &value, 1, 10, ImGuiInputTextFlags_EscapeClearsAll);
         if (ImGui::IsItemDeactivatedAfterEdit()) {
-            // sample_rate_hz_ = value;
             set_sample_rate_hz(value);
         }
     }
@@ -151,15 +145,15 @@ int sampler::set_sample_rate_hz(int sample_rate_hz) {
 
 int sampler::sampler_reconfigure() {
     // Compute sample rate
-    if (sample_rate_hz_ > (int)host_->base_frequency_get() ) {
-        std::cout << "sampler: Sample rate must be lower than host base_frequency. Clamping to " << (int)host_->base_frequency_get() << "\n";
-        sample_rate_hz_ = (int)host_->base_frequency_get();
+    if (sample_rate_hz_ > (int)base_frequency_hz_ ) {
+        std::cout << "sampler: Sample rate must be lower than host base_frequency. Clamping to " << (int)base_frequency_hz_ << "\n";
+        sample_rate_hz_ = (int)base_frequency_hz_;
     }
-    sample_tick_max_ = (int)host_->base_frequency_get() / sample_rate_hz_;
-    if ((sample_tick_max_*sample_rate_hz_) != (int)host_->base_frequency_get()) {
+    sample_tick_max_ = (int)base_frequency_hz_ / sample_rate_hz_;
+    if ((sample_tick_max_*sample_rate_hz_) != (int)base_frequency_hz_) {
         std::cout << "sampler: Sample rate must divide into host base_frequency. Setting to 10Hz\n";
         sample_rate_hz_ = 10;
-        sample_tick_max_ = (int)host_->base_frequency_get() / sample_rate_hz_;
+        sample_tick_max_ = (int)base_frequency_hz_ / sample_rate_hz_;
         return jcs::RET_ERROR;
     }
     sample_tick_ = 0;
@@ -281,11 +275,6 @@ void sampler::channel::plot() {
             ImGui::Text("%.6f", cursor_tag_[0] - cursor_tag_[1]);
 
             ImGui::TableNextRow();
-            // ImGui::TableSetColumnIndex(0);
-            // ImGui::Text("delta Y");
-            // ImGui::TableSetColumnIndex(1);
-            // ImGui::Text("%.6f", cursor_tag_[2] - cursor_tag_[3]);
-
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("Y_0");
             ImGui::TableSetColumnIndex(1);
@@ -333,7 +322,7 @@ void sampler::channels_clear() {
 }
 void sampler::channels_render_select_source() {
     for (int i=0; i<channels_.size(); i++) {
-        helpers::combo_select("Channel " + std::to_string(i) + " Source", &f32_output_signal_names_, &channels_[i]->source_combo_index_, &channels_[i]->source_);
+        helpers::combo_select("Channel " + std::to_string(i) + " Source", f32_output_signal_names_, &channels_[i]->source_combo_index_, &channels_[i]->source_);
     }
 }
 void sampler::channels_seed_filter(std::vector<float>* input) {
