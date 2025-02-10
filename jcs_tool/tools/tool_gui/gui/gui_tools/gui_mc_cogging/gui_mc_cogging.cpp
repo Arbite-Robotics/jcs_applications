@@ -27,6 +27,12 @@ gui_mc_cogging::gui_mc_cogging(jcs::jcs_host* host, gui_interface* gui_if, std::
     fb_w_m_0_idx_ = 1;
     fb_i_q_idx_ = 2;
     cmd_th_m_0_idx_ = 0;
+
+    required_input_signal_names_ = { "HOST::th_m" };
+    required_output_signal_names_ = { target_device_+"::th_m_0",
+                                      target_device_+"::w_m_0",
+                                      target_device_+"::i_q" };
+    can_start_ = true;
 }
 
 int gui_mc_cogging::startup() {
@@ -91,6 +97,7 @@ int gui_mc_cogging::step_rt() {
 int gui_mc_cogging::render() {
 
     ImGui::Text("Cogging compensator coefficients tool");
+    ImGui::Separator();
     ImGui::Text("Notes:");
     ImGui::Text("- Ensure correct configuration is used.");
     ImGui::Text("- Ensure motor configuration has parameter estimator_0_theta_passthrough set to yes.");
@@ -99,10 +106,29 @@ int gui_mc_cogging::render() {
     ImGui::Separator();
 
     ImGui::Text("Tool expects the following:");
-    ImGui::Text("- JCS output signal 0 is motor position: `th_m_0`");
-    ImGui::Text("- JCS output signal 1 is motor velocity: `w_m_0`");
-    ImGui::Text("- JCS output signal 2 is motor current:  `i_q`");
-    ImGui::Text("- JCS input signal 0 is motor commanded position: `th_m`");
+    ImGui::Text("- JCS output signal motor position: `th_m_0`");
+    ImGui::Text("- JCS output signal motor velocity: `w_m_0`");
+    ImGui::Text("- JCS output signal motor current:  `i_q`");
+    ImGui::Text("- JCS input signal motor commanded position: `th_m`");
+
+    ImGui::Separator();
+    if (helpers::input_signals_check(gui_if_->get_f32_input_signal_names(), &required_input_signal_names_) == false)    { can_start_ = false; }
+    if (helpers::output_signals_check(gui_if_->get_f32_output_signal_names(), &required_output_signal_names_) == false) { can_start_ = false; }
+
+    ImGui::Separator();
+    if (ImGui::Button("Click to make motor controller ready for tests!")) {
+        if (ready_test() != jcs::RET_OK) {
+            // Test failed - just return
+            return jcs::RET_OK;
+        }
+    }
+
+    if (!can_start_) {
+        ImGui::Text("Can't start! Most likely missing signal.");
+    }
+    if (!is_ready_) {
+        ImGui::BeginDisabled();
+    }
 
     ImGui::Separator();
     ImGui::Text("Configure signals");
@@ -261,6 +287,29 @@ int gui_mc_cogging::render() {
 
     write_coeffs_to_file();
 
+    // Cleanup, but don't clear is_ready here
+    if (!is_ready_) {
+        ImGui::EndDisabled();
+    }
+
+    return jcs::RET_OK;
+}
+
+int gui_mc_cogging::ready_test() {
+    {
+        bool ctrl_is_temperature_clamped = false;
+        PARAM_NOTIFY_ERROR( host_->read_bool(target_device_, "temperature_penalty_ctrl_is_clamped", &ctrl_is_temperature_clamped), "Parameter failed: temperature_penalty_ctrl_is_clamped" )
+
+        if (ctrl_is_temperature_clamped == true) {
+            std::cout << "ERROR: Device control is temperature clamped. Cannot continue with test.\n";
+            return jcs::RET_ERROR;
+        }
+    }
+
+    if (can_start_) {
+        is_ready_ = true;
+    }
+    helpers::sleep_ms(200);
     return jcs::RET_OK;
 }
 
@@ -279,16 +328,12 @@ void gui_mc_cogging::compute_outputs() {
         plot_final_.x_[i] = helpers::angle_norm_2pi(plot_result_.x_[i]);
         plot_final_.y_[i] = plot_result_.y_[i] - computed_mean_;
 
-
         plot_vis_.x_[i] = (5.0 + plot_final_.y_[i]) * cos(plot_final_.x_[i]); 
         plot_vis_.y_[i] = (5.0 + plot_final_.y_[i]) * sin(plot_final_.x_[i]); 
-
     }
 }
 
-
 int gui_mc_cogging::write_coeffs_to_file() {
-
     // Choose file to write to
     if (ImGui::Button("Write coefficients to file")) {
         IGFD::FileDialogConfig config;
@@ -301,7 +346,6 @@ int gui_mc_cogging::write_coeffs_to_file() {
             if (emit_config(ImGuiFileDialog::Instance()->GetCurrentPath()) != jcs::RET_OK) {
                 return jcs::RET_ERROR;
             }
-
         }
         ImGuiFileDialog::Instance()->Close();
     }
@@ -309,7 +353,6 @@ int gui_mc_cogging::write_coeffs_to_file() {
 }
 
 int gui_mc_cogging::emit_config(std::string const& file_path) {
-
     // Write to file
     std::string file_name = "dev_" + target_device_ + "_cogging_compensator_coefficients.yaml";
     std::string path_and_file = file_path + "/" + file_name;

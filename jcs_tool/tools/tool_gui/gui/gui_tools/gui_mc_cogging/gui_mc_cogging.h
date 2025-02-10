@@ -42,6 +42,10 @@ private:
     std::vector<std::string> required_input_signal_names_;
     std::vector<std::string> required_output_signal_names_;
 
+    bool is_ready_;
+    bool can_start_;
+    int ready_test();
+
     // Storage
     std::vector<float> signals_out_;
     std::vector<float> signals_in_;
