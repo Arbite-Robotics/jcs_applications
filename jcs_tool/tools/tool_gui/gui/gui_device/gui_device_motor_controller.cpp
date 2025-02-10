@@ -7,7 +7,7 @@
 #include "gui_mc_encoder.h"
 #include "gui_mc_tune.h"
 #include "gui_mc_cogging.h"
-#include "gui_mc_d_i_rotator.h"
+#include "gui_mc_current_test.h"
 #include "gui_firmware_update.h"
 #include <iostream>
 
@@ -28,7 +28,7 @@ gui_device_motor_controller::gui_device_motor_controller(jcs::jcs_host* host, gu
     gui_element_.push_back(new gui_mc_encoder(host_, gui_if_, name_));
     gui_element_.push_back(new gui_mc_tune(host_, gui_if_, name_));
     gui_element_.push_back(new gui_mc_cogging(host_, gui_if_, name_));
-    gui_element_.push_back(new gui_mc_d_i_rotator(host_, gui_if_, name_));
+    gui_element_.push_back(new gui_mc_current_test(host_, gui_if_, name_));
     gui_element_.push_back(new gui_firmware_update(host_, gui_if_, name_));
 }
 
