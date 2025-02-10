@@ -9,8 +9,8 @@
 #include "jcs_dev_motor_controller.h"
 
 //////////////////////////////////////////////////////////////////////
-gui_mc_tune::gui_mc_tune(jcs::jcs_host* host, std::string const& target_device) :
-    gui_type_base("Tuning", host, target_device)
+gui_mc_tune::gui_mc_tune(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) :
+    gui_type_base("Tuning", host, gui_if, target_device)
 {
     is_ready_ = false;
     test_step_response_[0] = new test_step_response("measure_test_axis_d");

@@ -9,19 +9,19 @@
 
 #include "jcs_dev_load_switch.h"
 
-gui_device_load_switch::gui_device_load_switch(jcs::jcs_host* host, std::string const& name) :
-    gui_device_base(host, name)
+gui_device_load_switch::gui_device_load_switch(jcs::jcs_host* host, gui_interface* gui_if, std::string const& name) :
+    gui_device_base(host, gui_if, name)
 {
-    gui_element_.push_back(new gui_parameter(host_, name_,
+    gui_element_.push_back(new gui_parameter(host_, gui_if_, name_,
         &jcs::node_parameter::dev_load_switch::parameters,
         &jcs::node_parameter::dev_load_switch::parameter_enums));
-    gui_element_.push_back(new gui_oscilloscope(host_, name_,
+    gui_element_.push_back(new gui_oscilloscope(host_, gui_if_, name_,
         &jcs::node_parameter::dev_load_switch::oscilloscope_sources,
         &jcs::node_parameter::dev_load_switch::oscilloscope_trigger_config,
         jcs::node_parameter::dev_load_switch::oscilloscope_sample_rate_hz,
         jcs::node_parameter::dev_load_switch::oscilloscope_sample_length,
         jcs::node_parameter::dev_load_switch::oscilloscope_n_channels));
-    gui_element_.push_back(new gui_firmware_update(host_, name_));
+    gui_element_.push_back(new gui_firmware_update(host_, gui_if_, name_));
 }
 
 int gui_device_load_switch::startup() {

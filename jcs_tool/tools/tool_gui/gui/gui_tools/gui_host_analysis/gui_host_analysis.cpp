@@ -11,8 +11,8 @@
 
 #include <ETFE.hpp>
 
-gui_host_analysis::gui_host_analysis(jcs::jcs_host* host, std::string const& target_device) : 
-    gui_type_base("Host analysis", host, target_device),
+gui_host_analysis::gui_host_analysis(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) : 
+    gui_type_base("Host analysis", host, gui_if, target_device),
     sample_time_(1),
     sample_rate_(1000),
     plotter_(sample_time_, sample_rate_)

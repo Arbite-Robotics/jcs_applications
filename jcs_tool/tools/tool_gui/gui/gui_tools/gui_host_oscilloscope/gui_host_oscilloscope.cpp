@@ -9,8 +9,8 @@
 #include "helpers.h"
 #include "ImGuiFileDialog.h"
 
-gui_host_oscilloscope::gui_host_oscilloscope(jcs::jcs_host* host, std::string const& target_device) : 
-    gui_type_base("Host Oscilloscope", host, target_device)
+gui_host_oscilloscope::gui_host_oscilloscope(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) : 
+    gui_type_base("Host Oscilloscope", host, gui_if, target_device)
 {
     sampler_state_ = sampler_state::off_s;
     storage_count_ = 0;

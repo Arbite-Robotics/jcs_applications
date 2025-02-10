@@ -5,10 +5,11 @@
 #include "gui_parameter.h"
 #include <iostream>
 
-gui_process_pd::gui_process_pd(jcs::jcs_host* host, std::string const& name) :
-    gui_device_base(host, name)
+gui_process_pd::gui_process_pd(jcs::jcs_host* host, gui_interface* gui_if, std::string const& name) :
+    gui_device_base(host, gui_if, name)
 {
-    gui_element_.push_back(new gui_parameter(host_, name_, &jcs::node_parameter::proc_pd::parameters, NULL));
+    gui_element_.push_back(new gui_parameter(host_, gui_if_, name_,
+        &jcs::node_parameter::proc_pd::parameters, NULL));
 }
 
 int gui_process_pd::startup() {

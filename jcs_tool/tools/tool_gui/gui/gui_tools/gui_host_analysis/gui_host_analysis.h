@@ -6,6 +6,7 @@
 
 #include "jcs_host.h"
 #include "gui_type_base.h"
+#include "gui_interface.h"
 #include "gui_device_host_base.h"
 #include <vector>
 #include <string>
@@ -15,7 +16,7 @@
 
 class gui_host_analysis : public gui_type_base, public gui_device_host_base {
 public:
-    gui_host_analysis(jcs::jcs_host* host, std::string const& target_device);
+    gui_host_analysis(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device);
     ~gui_host_analysis() {}
 
     int startup();

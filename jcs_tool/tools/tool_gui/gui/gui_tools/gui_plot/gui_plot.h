@@ -6,6 +6,7 @@
 
 #include "jcs_host.h"
 #include "gui_type_base.h"
+#include "gui_interface.h"
 #include "gui_device_host_base.h"
 #include <vector>
 #include "plot_sink.h"
@@ -15,8 +16,8 @@
 
 class gui_plot : public gui_type_base, public gui_device_host_base {
 public:
-    gui_plot(jcs::jcs_host* host, std::string const& target_device) :
-        gui_type_base("Signal Plot", host, target_device) {
+    gui_plot(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) :
+        gui_type_base("Signal Plot", host, gui_if, target_device) {
             signals_in_active_ = true;
         }
     ~gui_plot() {}

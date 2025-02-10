@@ -12,8 +12,8 @@
 #include "jcs_dev_motor_controller.h"
 
 //////////////////////////////////////////////////////////////////////
-gui_mc_cogging::gui_mc_cogging(jcs::jcs_host* host, std::string const& target_device) :
-    gui_type_base("Cogging Compensation", host, target_device),
+gui_mc_cogging::gui_mc_cogging(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) :
+    gui_type_base("Cogging Compensation", host, gui_if, target_device),
     plot_result_("Cogging raw", "th_m_0", "i_q", rotation_steps_),
     plot_final_("Cogging final", "th_m_0", "i_q", rotation_steps_),
     plot_vis_("Cogging visualisation", "th_m_0", "i_q", rotation_steps_)

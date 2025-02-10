@@ -10,8 +10,8 @@
 #include "hopper_2d_vmc_simple_xy_ctl.h"
 #include "hopper_2d_virtual_model_ctl.h"
 
-gui_host_2d_hopper::gui_host_2d_hopper(jcs::jcs_host* host, std::string const& target_device) : 
-    gui_type_base("Host 2d hopper", host, target_device)
+gui_host_2d_hopper::gui_host_2d_hopper(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) : 
+    gui_type_base("Host 2d hopper", host, gui_if, target_device)
 {
     active_idx_ = 0;
 

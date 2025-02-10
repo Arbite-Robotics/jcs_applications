@@ -46,8 +46,10 @@ void gui_parameter::parameter_do_all::tick(std::vector<param_base*>* param_store
 }
 
 //////////////////////////////////////////////////////////////////////
-gui_parameter::gui_parameter(jcs::jcs_host* host, std::string const& target_device, std::vector<jcs::parameter> const* params, std::vector<jcs::parameter_enum> const* enums) :
-    gui_type_base("Parameter", host, target_device), params_(params), enums_(enums), do_all_()
+gui_parameter::gui_parameter(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device, 
+        std::vector<jcs::parameter> const* params, std::vector<jcs::parameter_enum> const* enums) :
+    gui_type_base("Parameter", host, gui_if, target_device), 
+    params_(params), enums_(enums), do_all_()
 {
     // Note: Cant do anything reliant on host having been initialised here.
     // Host not initialised until after. 

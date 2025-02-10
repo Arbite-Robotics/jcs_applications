@@ -12,10 +12,10 @@
 
 #include "jcs_dev_motor_controller.h"
 
-gui_oscilloscope::gui_oscilloscope(jcs::jcs_host* host, std::string const& target_device, 
+gui_oscilloscope::gui_oscilloscope(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device, 
     std::vector<std::string> const* oscilloscope_sources, std::vector<std::string> const* oscilloscope_trigger_config,
     int const default_sample_rate_hz, int const sample_length, int const n_channels) : 
-    gui_type_base("Oscilloscope", host, target_device),
+    gui_type_base("Oscilloscope", host, gui_if, target_device),
     oscilloscope_sources_(oscilloscope_sources),
     oscilloscope_trigger_config_(oscilloscope_trigger_config),
     sample_rate_(default_sample_rate_hz),

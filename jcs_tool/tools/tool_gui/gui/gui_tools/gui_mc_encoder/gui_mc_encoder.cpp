@@ -9,8 +9,8 @@
 #include "jcs_dev_motor_controller.h"
 
 //////////////////////////////////////////////////////////////////////
-gui_mc_encoder::gui_mc_encoder(jcs::jcs_host* host, std::string const& target_device) :
-    gui_type_base("Encoder", host, target_device)
+gui_mc_encoder::gui_mc_encoder(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) :
+    gui_type_base("Encoder", host, gui_if, target_device)
 {
     is_ready_ = false;
     i_d_alignment_ = 1.0f;

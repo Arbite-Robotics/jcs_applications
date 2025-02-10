@@ -6,6 +6,7 @@
 
 #include <string>
 #include "gui_device_base.h"
+#include "gui_interface.h"
 #include "gui_device_host_base.h"
 #include "jcs_host.h"
 
@@ -18,7 +19,7 @@
 
 class gui_device_host : public gui_device_base, public gui_device_host_base {
 public:
-    gui_device_host(jcs::jcs_host* host, std::string const& name);
+    gui_device_host(jcs::jcs_host* host, gui_interface* gui_if, std::string const& name);
     ~gui_device_host() {}
 
     int startup();

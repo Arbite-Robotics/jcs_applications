@@ -6,6 +6,7 @@
 
 #include "jcs_host.h"
 #include "gui_type_base.h"
+#include "gui_interface.h"
 #include "tool_gui_settings.h"
 #include <vector>
 #include <array>
@@ -14,7 +15,7 @@
 
 class gui_oscilloscope : public gui_type_base {
 public:
-    gui_oscilloscope(jcs::jcs_host* host, std::string const& target_device, 
+    gui_oscilloscope(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device, 
         std::vector<std::string> const* oscilloscope_sources, std::vector<std::string> const* oscilloscope_trigger_config,
         int const default_sample_rate_hz, int const sample_length, int const n_channels);
     ~gui_oscilloscope() {}

@@ -7,8 +7,8 @@
 
 #include "ImGuiFileDialog.h"
 
-gui_firmware_update::gui_firmware_update(jcs::jcs_host* host, std::string const& target_device) : 
-    gui_type_base("Firmware", host, target_device)
+gui_firmware_update::gui_firmware_update(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) : 
+    gui_type_base("Firmware", host, gui_if, target_device)
 {
     fw_write_active_ = false;
     fw_status_ = status::standby_s;

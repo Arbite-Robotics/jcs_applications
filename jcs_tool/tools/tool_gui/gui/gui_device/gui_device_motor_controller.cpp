@@ -7,27 +7,29 @@
 #include "gui_mc_encoder.h"
 #include "gui_mc_tune.h"
 #include "gui_mc_cogging.h"
+#include "gui_mc_d_i_rotator.h"
 #include "gui_firmware_update.h"
 #include <iostream>
 
 #include "jcs_dev_motor_controller.h"
 
-gui_device_motor_controller::gui_device_motor_controller(jcs::jcs_host* host, std::string const& name) :
-    gui_device_base(host, name)
+gui_device_motor_controller::gui_device_motor_controller(jcs::jcs_host* host, gui_interface* gui_if, std::string const& name) :
+    gui_device_base(host, gui_if, name)
 {
-    gui_element_.push_back(new gui_parameter(host_, name_,
+    gui_element_.push_back(new gui_parameter(host_, gui_if_, name_,
         &jcs::node_parameter::dev_motor_controller::parameters,
         &jcs::node_parameter::dev_motor_controller::parameter_enums));
-    gui_element_.push_back(new gui_oscilloscope(host_, name_,
+    gui_element_.push_back(new gui_oscilloscope(host_, gui_if_, name_,
         &jcs::node_parameter::dev_motor_controller::oscilloscope_sources,
         &jcs::node_parameter::dev_motor_controller::oscilloscope_trigger_config,
         jcs::node_parameter::dev_motor_controller::oscilloscope_sample_rate_hz,
         jcs::node_parameter::dev_motor_controller::oscilloscope_sample_length,
         jcs::node_parameter::dev_motor_controller::oscilloscope_n_channels));
-    gui_element_.push_back(new gui_mc_encoder(host_, name_));
-    gui_element_.push_back(new gui_mc_tune(host_, name_));
-    gui_element_.push_back(new gui_mc_cogging(host_, name_));
-    gui_element_.push_back(new gui_firmware_update(host_, name_));
+    gui_element_.push_back(new gui_mc_encoder(host_, gui_if_, name_));
+    gui_element_.push_back(new gui_mc_tune(host_, gui_if_, name_));
+    gui_element_.push_back(new gui_mc_cogging(host_, gui_if_, name_));
+    gui_element_.push_back(new gui_mc_d_i_rotator(host_, gui_if_, name_));
+    gui_element_.push_back(new gui_firmware_update(host_, gui_if_, name_));
 }
 
 

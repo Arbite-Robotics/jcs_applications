@@ -10,13 +10,15 @@
 #include <vector>
 #include <string>
 #include "gui_type_base.h"
+#include "gui_interface.h"
 #include "gui_parameter_types.h"
 #include "jcs_parameter.h"
 
 //////////////////////////////////////////////////////////////////////
 class gui_parameter : public gui_type_base {
 public:
-    gui_parameter(jcs::jcs_host* host, std::string const& target_device, std::vector<jcs::parameter> const* params, std::vector<jcs::parameter_enum> const* enums);
+    gui_parameter(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device, 
+        std::vector<jcs::parameter> const* params, std::vector<jcs::parameter_enum> const* enums);
     ~gui_parameter() {}
 
     int startup();
