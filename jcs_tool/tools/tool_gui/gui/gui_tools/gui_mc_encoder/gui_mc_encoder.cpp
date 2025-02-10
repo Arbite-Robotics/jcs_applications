@@ -64,6 +64,7 @@ int gui_mc_encoder::render() {
 int gui_mc_encoder::render_zero_encoder() {
     ImGui::Separator();
     ImGui::Text("Zero encoder");
+    ImGui::Separator();
     ImGui::Text("This tool will ramp the D-Axis current, then record the encoder offset.");
     ImGui::Text("Notes:");
     ImGui::Text("- Ensure a large enough D-Axis current to overcome any friction or cogging torque effects.");

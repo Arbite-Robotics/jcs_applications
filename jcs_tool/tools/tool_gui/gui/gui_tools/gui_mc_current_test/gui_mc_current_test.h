@@ -33,7 +33,6 @@ private:
     };
     state state_;
 
-
     int ready_test();
     void get_test_parameters();
 

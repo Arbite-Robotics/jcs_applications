@@ -90,7 +90,7 @@ int gui_mc_current_test::step_rt_always() {
 int gui_mc_current_test::render() {
 
     ImGui::Text("Current test tool");
-    ImGui::NewLine();
+    ImGui::Separator();
     ImGui::Text("This tool ramps, then applies a test current to the motor.");
     ImGui::Text("While the test current is applied, the motor is rotated to distribute heat effects evenly about the motor and controller power electronics.");
     ImGui::Text("Use this tool to record the motor or controller temperature under constant current application, e.g. obtaining motor temperature response.");
