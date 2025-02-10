@@ -14,8 +14,14 @@ public:
     // theta_start: Starting angle
     // rotations:   Number of rotations to complete
     // direction:   Positive - incrementing theta, Negative - decrementing theta
-    // precision:   Steps per rotation
+    // time_s:      Time spent rotating
     void start(double theta_start, double rotations, bool direction, double time_s);
+
+    // theta_start: Starting angle
+    // speed_rads:  Rotation speed
+    // direction:   Positive - incrementing theta, Negative - decrementing theta
+    // time_s:      Time spent rotating
+    void start_speed(double theta_start, double speed_rads, bool direction, double time_s);
 
     // Return rotational angle
     float step();
