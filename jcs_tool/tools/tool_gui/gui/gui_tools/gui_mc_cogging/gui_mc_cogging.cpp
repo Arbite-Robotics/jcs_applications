@@ -38,38 +38,6 @@ int gui_mc_cogging::startup() {
     signals_out_.resize(host_sigs_out_sz);
     signals_in_.resize(host_sigs_in_sz);
 
-    // Build a list of all available output float type, base rate signals
-    for (int i=0; i<host_->sig_output_sz_unsafe_rt(jcs::signal_type::float32_s, 0); i++) {
-        std::string node_name;
-        if (host_->sig_output_node_name_get(jcs::signal_type::float32_s, 0, i, &node_name) != jcs::RET_OK) {
-            std::cout << "gui_mc_cogging: Error getting node name for output signal at index " << i << "\n";
-            return jcs::RET_ERROR;
-        }
-        std::string name;
-        if (host_->sig_output_name_get(jcs::signal_type::float32_s, 0, i, &name) != jcs::RET_OK) {
-            std::cout << "gui_mc_cogging: Error getting output signal name at index " << i << "\n";
-            return jcs::RET_ERROR;
-        }
-        // Name will be node name + signal name
-        f32_output_signal_names_.push_back(node_name + "::" + name);
-    }
-
-    // Build a list of all available input float type, base rate signals
-    for (int i=0; i<host_->sig_input_sz_unsafe_rt(jcs::signal_type::float32_s, 0); i++) {
-        std::string node_name;
-        if (host_->sig_input_node_name_get(jcs::signal_type::float32_s, 0, i, &node_name) != jcs::RET_OK) {
-            std::cout << "gui_mc_cogging: Error getting node name for input signal at index " << i << "\n";
-            return jcs::RET_ERROR;
-        }
-        std::string name;
-        if (host_->sig_input_name_get(jcs::signal_type::float32_s, 0, i, &name) != jcs::RET_OK) {
-            std::cout << "gui_mc_cogging: Error getting input signal name at index " << i << "\n";
-            return jcs::RET_ERROR;
-        }
-        // Name will be node name + signal name
-        f32_input_signal_names_.push_back(node_name + "::" + name);
-    }
-
     return jcs::RET_OK;
 }
 
@@ -138,10 +106,10 @@ int gui_mc_cogging::render() {
 
     ImGui::Separator();
     ImGui::Text("Configure signals");
-    helpers::combo_select("th_m_0 source",  &f32_output_signal_names_, &fb_th_m_0_idx_, NULL);
-    helpers::combo_select("w_m_0 source",   &f32_output_signal_names_, &fb_w_m_0_idx_, NULL);
-    helpers::combo_select("i_q source",     &f32_output_signal_names_, &fb_i_q_idx_, NULL);
-    helpers::combo_select("th_m_0 command", &f32_input_signal_names_,  &cmd_th_m_0_idx_, NULL);
+    helpers::combo_select("th_m_0 source",  gui_if_->get_f32_output_signal_names(), &fb_th_m_0_idx_, NULL);
+    helpers::combo_select("w_m_0 source",   gui_if_->get_f32_output_signal_names(), &fb_w_m_0_idx_, NULL);
+    helpers::combo_select("i_q source",     gui_if_->get_f32_output_signal_names(), &fb_i_q_idx_, NULL);
+    helpers::combo_select("th_m_0 command", gui_if_->get_f32_input_signal_names(),  &cmd_th_m_0_idx_, NULL);
 
     ImGui::Separator();
     ImGui::Text("Starting this test will start JCS system. Ensure it is safe to do so.");

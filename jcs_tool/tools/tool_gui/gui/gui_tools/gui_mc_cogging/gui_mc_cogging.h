@@ -39,11 +39,12 @@ private:
     };
     behaviour state_;
 
+    std::vector<std::string> required_input_signal_names_;
+    std::vector<std::string> required_output_signal_names_;
+
     // Storage
     std::vector<float> signals_out_;
     std::vector<float> signals_in_;
-    std::vector<std::string> f32_output_signal_names_;
-    std::vector<std::string> f32_input_signal_names_;
     // Indices into storage
     int fb_th_m_0_idx_;
     int fb_w_m_0_idx_;
