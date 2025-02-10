@@ -67,7 +67,6 @@ private:
     std::array<channel*, 8> channels_;
 
     std::vector<float> f32_osignal_store_;
-    std::vector<std::string> f32_output_signal_names_;
 
     double t_start_ns_;
     float t_s_;
