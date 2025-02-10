@@ -34,11 +34,11 @@ private:
     };
     sampler_state sampler_state_;
 
-    int         sample_rate_;
-    int         sample_time_;
+    int sample_rate_;
+    int sample_time_;
 
-    int         storage_count_;
-    int         storage_length_;
+    int storage_count_;
+    int storage_length_;
 
     struct plotter {
         int size_;
@@ -61,8 +61,8 @@ private:
 
     std::vector<float> f32_osignal_store_;
     std::vector<float> f32_isignal_store_;
-    std::vector<std::string> f32_output_signal_names_;
-    std::vector<std::string> f32_input_signal_names_;
+    // std::vector<std::string> f32_output_signal_names_;
+    // std::vector<std::string> f32_input_signal_names_;
 
     // Trigger
     enum class control_type {
