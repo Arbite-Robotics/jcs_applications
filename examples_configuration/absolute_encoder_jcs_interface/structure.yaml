@@ -1,0 +1,39 @@
+- name: HOST
+  type: dev_host
+  network:
+    - port: 0
+      devices:
+        - name: jc_0
+  input_signals:
+    - rate: base
+      signals:
+        # Encoder estimated position and velocity
+        - source: encoder_0
+          name:   th          
+        - source: encoder_0
+          name:   w
+
+        # Raw encoder counts
+        - source: encoder_0
+          name:   th_counts
+        # Raw encoder (not estimated)
+        - source: encoder_0
+          name:   th_encoder
+
+        # Encoder analogue
+        - source: encoder_0
+          name:   temperature_0
+        - source: encoder_0
+          name:   an_1
+
+####################################################################
+- name: jc_0
+  type: dev_joint_controller
+  network:
+    - port: 2
+      devices:
+        - name: encoder_0
+
+####################################################################
+- name: encoder_0
+  type: dev_encoder_absolute
