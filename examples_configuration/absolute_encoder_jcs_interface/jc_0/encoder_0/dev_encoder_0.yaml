@@ -1,0 +1,44 @@
+name: encoder_0
+device_id: [5046351, 825315596, 858927927]
+
+# Redefine an_0 name and units
+an_0_name:  temperature_0
+an_0_units: degC
+
+# Configuration parameters to be sent to device
+parameters:
+  encoder_direction: yes
+
+  ########################################################################
+  # Configure position and velocity estimator
+  estimator_type: tracking_loop
+  estimator_tracking_loop_bandwidth_hz: 400.0
+
+  ########################################################################
+  # Configure an_0 as a temperature sensor interface
+  # Temperature gains and offset in the form: T_out = adc * gain - offset
+  # MCP9700 temperature sensor Ta = (1/Tc)Vout - (V0/Tc)
+  # Tc = 10mV/degC
+  # V0 = 500mV
+  # Now map Vout to ADC
+  # Vout = adc*(3.3/4096)
+  # Now
+  # gain   = (1/Tc)*(3.3/4096)  = 0.0805664063
+  # offset = (V0/Tc) = (500/10) = 50
+  an_0_gain:            0.0805664063
+  an_0_offset:          50.0
+  an_0_limit_warning_h: 60.0
+  an_0_limit_warning_l: 0.0
+  an_0_limit_error_h:   300.0
+  an_0_limit_error_l:   -50.0
+  an_0_filter_fc_hz:    1.0
+
+  # Configure an_1 as a voltage interface
+  # gain = 3.3/4096
+  an_1_gain:            8.0566e-4
+  an_1_offset:          0.0
+  an_1_limit_warning_h: 50.0
+  an_1_limit_warning_l: 0.0
+  an_1_limit_error_h:   500.0
+  an_1_limit_error_l:   -50.0
+  an_1_filter_fc_hz:    10.0

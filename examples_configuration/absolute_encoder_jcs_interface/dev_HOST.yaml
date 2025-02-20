@@ -1,0 +1,31 @@
+name: HOST
+device_id: [0, 0, 0]
+
+####################################################################
+base_config:
+  base_freq_hz: 2000
+  # base_freq_hz: 500 # For firmware updating
+
+####################################################################
+transport_config:
+  - port: 0
+    type: transport_ecat_soem
+    ifname: enp3s0
+    sync_offset_time_us: 200 # For 2khz base freq
+
+####################################################################
+behaviour:
+  autostart_nodes:  true
+  autostop_nodes:   true
+  get_errors_at_shutdown: true
+
+####################################################################
+# Host input signals
+signals:
+
+
+####################################################################
+# list_ready_dev:
+        
+####################################################################
+# list_start:
