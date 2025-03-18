@@ -303,7 +303,7 @@ void gui_host_analysis::render_analysis() {
     static float overlap      = 0.5f;
 
     static double Fc[] = {100,100};
-    static bool etfe_need_update = true;
+    static bool etfe_need_update = false;
 
     static etfe::ETFE etfe(N, Fs, etfe::hamming(nwindow_opts[inwindow]), nwindow_opts[inwindow]/2, nfft_opts[infft]);        
 
