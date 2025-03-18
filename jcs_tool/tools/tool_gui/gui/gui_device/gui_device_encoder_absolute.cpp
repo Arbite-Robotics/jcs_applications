@@ -12,7 +12,8 @@ gui_device_encoder_absolute::gui_device_encoder_absolute(jcs::jcs_host* host, gu
     gui_device_base(host, gui_if, name)
 {
     gui_element_.push_back(new gui_parameter(host_, gui_if_, name_,
-        &jcs::node_parameter::dev_encoder_absolute::parameters, NULL));
+        &jcs::node_parameter::dev_encoder_absolute::parameters,
+        &jcs::node_parameter::dev_encoder_absolute::parameter_enums));
     gui_element_.push_back(new gui_firmware_update(host_, gui_if_, name_));
 }
 
