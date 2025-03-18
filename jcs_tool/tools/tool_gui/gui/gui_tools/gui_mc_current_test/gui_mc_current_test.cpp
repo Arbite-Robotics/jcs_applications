@@ -158,6 +158,7 @@ int gui_mc_current_test::render() {
             case state::ramp_to_current_s:
             case state::rotate_s:
             case state::finish_s:
+                f32_input_signal_store_[ signal_in_source_i_d_.index_ ] = 0.0f;
                 sampler_.stop();
                 gui_if_->stop();
                 state_ = state::off_s;
