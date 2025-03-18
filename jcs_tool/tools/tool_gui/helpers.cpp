@@ -71,6 +71,28 @@ helpers::combo_source::combo_source(std::string const& source, int const index) 
     index_ = index;
 }
 
+void helpers::listbox_select(std::string const& name, std::vector<std::string>* sources, int display_max_items, int* current_idx, std::string* dest) {
+    ImGui::PushID(name.c_str());
+    if (ImGui::BeginListBox(name.c_str(), ImVec2(-FLT_MIN, display_max_items * ImGui::GetTextLineHeightWithSpacing()))) {
+        for (int i = 0; i < sources->size(); ++i) {
+            const bool is_selected = (*current_idx == i);
+            if (ImGui::Selectable(sources->at(i).c_str(), is_selected)) {
+                *current_idx = i;
+            }
+            // Set the initial focus when opening the combo
+            // (scrolling + keyboard navigation focus)
+            if (is_selected) {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        if (dest != nullptr) {
+            *dest = sources->at(*current_idx);
+        }
+        ImGui::EndListBox();
+    }
+    ImGui::PopID();
+}
+
 int helpers::build_output_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_output_signal_names) {
     // Build a list of all available output float type, base rate signals
     for (int i=0; i<host->sig_output_sz_unsafe_rt(jcs::signal_type::float32_s, 0); i++) {
