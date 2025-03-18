@@ -26,11 +26,14 @@ private:
     bool is_ready_;
     float i_d_alignment_;
     float i_d_alignment_ramp_time_ms_;
-    float encoder_0_position_offset_;
+    float encoder_position_offset_;
 
 
     int render_zero_encoder();
     int ready_test();
+
+    helpers::combo_source active_encoder_;
+    std::vector<std::string> const encoders_;
 };
 
 #endif

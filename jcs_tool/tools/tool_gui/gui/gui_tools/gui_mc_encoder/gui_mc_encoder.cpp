@@ -10,12 +10,14 @@
 
 //////////////////////////////////////////////////////////////////////
 gui_mc_encoder::gui_mc_encoder(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) :
-    gui_type_base("Encoder", host, gui_if, target_device)
+    gui_type_base("Encoder", host, gui_if, target_device),
+    encoders_({"encoder_0", "encoder_1"}),
+    active_encoder_("encoder_0", 0)
 {
     is_ready_ = false;
     i_d_alignment_ = 1.0f;
     i_d_alignment_ramp_time_ms_ = 2000.0f;
-    encoder_0_position_offset_ = 0.0f;
+    encoder_position_offset_ = 0.0f;
 }
 
 int gui_mc_encoder::startup() {
@@ -70,6 +72,13 @@ int gui_mc_encoder::render_zero_encoder() {
     ImGui::Text("- Ensure a large enough D-Axis current to overcome any friction or cogging torque effects.");
     ImGui::Text("- Ensure device is not temperature clamped.");
     ImGui::Text("- Ensure anti-cogging feature is disabled.");
+    ImGui::NewLine();
+
+    ImGui::Separator();
+    ImGui::Text("Select encoder");
+    helpers::combo_select("Active encoder", &encoders_, &active_encoder_);
+
+    ImGui::Separator();
     {
         float value = i_d_alignment_;
         if (ImGui::InputFloat("D-Axis alignment current (A)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
@@ -119,7 +128,15 @@ int gui_mc_encoder::render_zero_encoder() {
         helpers::sleep_ms(3000);
 
         // Zero the encoder
-        PARAM_NOTIFY_ERROR( host_->write_command(target_device_, "encoder_0_position_zero"), "Parameter failed: encoder_0_position_zero" )
+        switch (active_encoder_.index_) {
+            default:
+            case 0:
+                PARAM_NOTIFY_ERROR( host_->write_command(target_device_, "encoder_0_position_zero"), "Parameter failed: encoder_0_position_zero" )
+                break;
+            case 1:
+                PARAM_NOTIFY_ERROR( host_->write_command(target_device_, "encoder_1_position_zero"), "Parameter failed: encoder_1_position_zero" )
+                break;
+        }
 
         // Stop the test
         PARAM_NOTIFY_ERROR( host_->write_command(target_device_, "controller_stop"), "Parameter failed: controller_stop" )
@@ -127,10 +144,26 @@ int gui_mc_encoder::render_zero_encoder() {
         helpers::sleep_ms(200);
 
         // Read back the zero position
-        PARAM_NOTIFY_ERROR( host_->read_float(target_device_, "encoder_0_position_offset", &encoder_0_position_offset_), "Parameter failed: encoder_0_position_offset" )
-        
+        switch (active_encoder_.index_) {
+            default:
+            case 0:
+                PARAM_NOTIFY_ERROR( host_->read_float(target_device_, "encoder_0_position_offset", &encoder_position_offset_), "Parameter failed: encoder_0_position_offset" )
+                break;
+            case 1:
+                PARAM_NOTIFY_ERROR( host_->read_float(target_device_, "encoder_1_position_offset", &encoder_position_offset_), "Parameter failed: encoder_1_position_offset" )
+                break;
+        }
+
     }
-    ImGui::Text("encoder_0_position_offset: %.6f", encoder_0_position_offset_);
+    switch (active_encoder_.index_) {
+        default:
+        case 0:
+            ImGui::Text("encoder_0_position_offset: %.6f", encoder_position_offset_);
+            break;
+        case 1:
+            ImGui::Text("encoder_1_position_offset: %.6f", encoder_position_offset_);
+            break;
+    }
 
     return jcs::RET_OK;
 }
