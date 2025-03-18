@@ -4,6 +4,7 @@
 #include "sampler.h"
 #include "implot.h"
 #include <iostream>
+#include <iomanip>
 #include "ImGuiFileDialog.h"
 
 sampler::sampler(int const base_frequency_hz, std::vector<std::string>* output_signal_names, int const n_channels, int const inital_sample_rate_hz, int const initial_sample_time_s) :
@@ -369,7 +370,10 @@ int sampler::channels_write_to_file() {
 int sampler::emit_data(std::string const& path_and_file) {
     std::cout << "Writing to: " << path_and_file << "\n";
 
-    std::ofstream config_file(path_and_file); 
+    std::ofstream config_file(path_and_file);
+
+    // Force time to be 3 digits precision, but leave the rest as default
+    std::streamsize default_precision = config_file.precision();
 
     config_file << "t,";
     for (int i=0; i<channels_.size()-1; i++) {
@@ -380,8 +384,12 @@ int sampler::emit_data(std::string const& path_and_file) {
     for (int i=0; i<channels_[0]->buffer_.data_.size(); i++) {
         ImVec2 point = channels_[0]->buffer_[i];
 
-        config_file << point.x << ","; // time
-        config_file << point.y << ","; // channel 0 data point
+        // Time is 3 sig fig
+        config_file << std::fixed << std::setprecision(3) << point.x << ",";
+
+        // Channel data is default
+        config_file.precision(default_precision);
+        config_file << point.y << ",";
         // Middle channels
         for (int ch=1; ch<channels_.size()-1; ch++) {
             config_file << channels_[ch]->buffer_[i].y << ",";
