@@ -14,7 +14,6 @@ void plot_sink_opstate::update() {
     ImGui::TableSetColumnIndex(0);
     // Update data
     uint8_t value = (uint8_t)(*val_ptr_);
-
     // // Update interface
     // std::string info;
     // // Dev name and signal
@@ -43,23 +42,22 @@ void plot_sink_opstate::update() {
     ImGui::SameLine(100);
     // Decode remaining 5 bits as general flags
     bool bit_val = 0;
+    uint8_t flags = value;
     for (int i=0; i<4; i++) {
-        bit_val = (value & 0x80) ? 1 : 0;
-        value = value << 1; 
+        bit_val = (flags & 0x80) ? 1 : 0;
+        flags = flags << 1;
+        ImGui::PushID(i);
         ImGui::Checkbox("##", &bit_val); ImGui::SameLine();
+        ImGui::PopID();
     }
-    bit_val = (value & 0x80) ? 1 : 0;
-    value = value << 1; 
+    bit_val = (flags & 0x80) ? 1 : 0;
+    flags = flags << 1;
     ImGui::Checkbox("##", &bit_val);
 
     ImGui::SameLine();
 
-    // ImGui::Text("%s", info.c_str());
-    ImGui::Text("%s", name_.c_str()); 
-    ImGui::SameLine();
-    ImGui::Text("::");
-    ImGui::SameLine();
-    ImGui::Text("%s", node_name_.c_str()); 
+    // Print hex of opstate + node name etc
+    ImGui::Text("(0x%02x)  %s::%s", value, name_.c_str(), node_name_.c_str());
     ImGui::PopID();
 
     // Information column
