@@ -32,6 +32,7 @@ gui_mc_cogging::gui_mc_cogging(jcs::jcs_host* host, gui_interface* gui_if, std::
     required_output_signal_names_ = { target_device_+"::th_m_0",
                                       target_device_+"::w_m_0",
                                       target_device_+"::i_q" };
+    is_ready_ = false;
     can_start_ = true;
 }
 
