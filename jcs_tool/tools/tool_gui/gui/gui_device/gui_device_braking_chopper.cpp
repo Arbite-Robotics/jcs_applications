@@ -8,11 +8,12 @@
 
 #include "jcs_dev_braking_chopper.h"
 
-gui_device_braking_chopper::gui_device_braking_chopper(jcs::jcs_host* host, std::string const& name) :
-    gui_device_base(host, name)
+gui_device_braking_chopper::gui_device_braking_chopper(jcs::jcs_host* host, gui_interface* gui_if, std::string const& name) :
+    gui_device_base(host, gui_if, name)
 {
-    gui_element_.push_back(new gui_parameter(host_, name_, &jcs::node_parameter::dev_braking_chopper::parameters, &jcs::node_parameter::dev_braking_chopper::parameter_enums));
-    gui_element_.push_back(new gui_firmware_update(host_, name_));
+    gui_element_.push_back(new gui_parameter(host_, gui_if_, name_, 
+        &jcs::node_parameter::dev_braking_chopper::parameters, &jcs::node_parameter::dev_braking_chopper::parameter_enums));
+    gui_element_.push_back(new gui_firmware_update(host_, gui_if_, name_));
 }
 
 int gui_device_braking_chopper::startup() {

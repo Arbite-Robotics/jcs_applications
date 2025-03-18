@@ -17,8 +17,9 @@
 
 #include "gui_device_base.h"
 #include "gui_device_host.h"
+#include "gui_interface.h"
 
-class tool_gui : public jcs_tool_if {
+class tool_gui : public jcs_tool_if, public gui_interface {
 public:
     tool_gui(std::string name, jcs::jcs_host* host);
     ~tool_gui();
@@ -32,6 +33,12 @@ public:
     int step_parameter();
     int step_parameter_shutdown();
 
+    // Interface and helpers
+    int start();
+    int stop();
+    std::vector<std::string>* get_f32_input_signal_names();
+    std::vector<std::string>* get_f32_output_signal_names();
+
 private:
     int render_display();
     int render_top_display(ImVec2* w_pos, ImVec2* w_size);
@@ -41,6 +48,10 @@ private:
     std::vector<jcs::jcs_device>* device_tree_;
     std::vector<gui_device_base*> store_;
     gui_device_host* host_ptr_;
+
+    // Signal helpers
+    std::vector<std::string> f32_input_signal_names_;
+    std::vector<std::string> f32_output_signal_names_;
 
     // Device selection helpers
     int device_select_idx_;

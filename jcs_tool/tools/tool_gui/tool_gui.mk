@@ -4,6 +4,7 @@
 
 JCS_TOOL_GUI_SRC  = build/tools/tool_gui/tool_gui.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/helpers.o
+JCS_TOOL_GUI_SRC += build/tools/tool_gui/sampler.o
 
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_device/gui_device_host.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_device/gui_device_joint_controller.o
@@ -41,7 +42,9 @@ JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_host_logger/gui_host_
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_mc_tune/gui_mc_tune.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_mc_cogging/gui_mc_cogging.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_mc_encoder/gui_mc_encoder.o
+JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_mc_current_test/gui_mc_current_test.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_bc_tune/gui_bc_tune.o
+
 # Hoppy robot
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_fun/2d_hopper/gui_host_2d_hopper.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_fun/2d_hopper/hopper_2d_kinematics.o
@@ -104,6 +107,7 @@ JCS_TOOL_GUI_INC += -I$(TARGET_PATH)tools/tool_gui/gui/gui_tools/gui_firmware_up
 JCS_TOOL_GUI_INC += -I$(TARGET_PATH)tools/tool_gui/gui/gui_tools/gui_mc_tune/
 JCS_TOOL_GUI_INC += -I$(TARGET_PATH)tools/tool_gui/gui/gui_tools/gui_mc_cogging/
 JCS_TOOL_GUI_INC += -I$(TARGET_PATH)tools/tool_gui/gui/gui_tools/gui_mc_encoder/
+JCS_TOOL_GUI_INC += -I$(TARGET_PATH)tools/tool_gui/gui/gui_tools/gui_mc_current_test/
 JCS_TOOL_GUI_INC += -I$(TARGET_PATH)tools/tool_gui/gui/gui_tools/gui_bc_tune/
 
 JCS_TOOL_GUI_INC += -I$(TARGET_PATH)tools/tool_gui/gui/gui_fun/2d_hopper/

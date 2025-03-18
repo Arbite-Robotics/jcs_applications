@@ -9,8 +9,8 @@
 #include "helpers.h"
 #include "ImGuiFileDialog.h"
 
-gui_host_oscilloscope::gui_host_oscilloscope(jcs::jcs_host* host, std::string const& target_device) : 
-    gui_type_base("Host Oscilloscope", host, target_device)
+gui_host_oscilloscope::gui_host_oscilloscope(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) : 
+    gui_type_base("Host Oscilloscope", host, gui_if, target_device)
 {
     sampler_state_ = sampler_state::off_s;
     storage_count_ = 0;
@@ -34,22 +34,6 @@ int gui_host_oscilloscope::startup() {
 
     storage_length_ = sample_time_ * host_->base_frequency_get();
 
-    // Build a list of all available output float type, base rate signals
-    for (int i=0; i<host_->sig_output_sz_unsafe_rt(jcs::signal_type::float32_s, 0); i++) {
-        std::string node_name;
-        if (host_->sig_output_node_name_get(jcs::signal_type::float32_s, 0, i, &node_name) != jcs::RET_OK) {
-            std::cout << "gui_host_oscilloscope: Error getting node name for output signal at index " << i << "\n";
-            return jcs::RET_ERROR;
-        }
-        std::string name;
-        if (host_->sig_output_name_get(jcs::signal_type::float32_s, 0, i, &name) != jcs::RET_OK) {
-            std::cout << "gui_host_oscilloscope: Error getting output signal name at index " << i << "\n";
-            return jcs::RET_ERROR;
-        }
-        // Name will be node name + signal name
-        f32_output_signal_names_.push_back(node_name + "::" + name);
-    }
-
     // Update storage for new configured base rate
     for (int ch=0; ch<channels_.size(); ch++) {
         channels_[ch]->update_storage_length(sample_time_, host_->base_frequency_get());
@@ -58,22 +42,6 @@ int gui_host_oscilloscope::startup() {
     // Configure input stimulus
     input_stimulus_ = new gui_stimulus(static_cast<double>(host_->base_frequency_get()));
     input_stim_combo_idx_ = 0;
-
-    // Build a list of all available input float type, base rate signals
-    for (int i=0; i<host_->sig_input_sz_unsafe_rt(jcs::signal_type::float32_s, 0); i++) {
-        std::string node_name;
-        if (host_->sig_input_node_name_get(jcs::signal_type::float32_s, 0, i, &node_name) != jcs::RET_OK) {
-            std::cout << "gui_host_oscilloscope: Error getting node name for input signal at index " << i << "\n";
-            return jcs::RET_ERROR;
-        }
-        std::string name;
-        if (host_->sig_input_name_get(jcs::signal_type::float32_s, 0, i, &name) != jcs::RET_OK) {
-            std::cout << "gui_host_oscilloscope: Error getting input signal name at index " << i << "\n";
-            return jcs::RET_ERROR;
-        }
-        // Name will be node name + signal name
-        f32_input_signal_names_.push_back(node_name + "::" + name);
-    }
 
     return jcs::RET_OK;
 }
@@ -197,7 +165,7 @@ int gui_host_oscilloscope::render_interface() {
 
     // Channel Source
     for (int i=0; i<channels_.size(); i++) {
-        helpers::combo_select("Channel " + std::to_string(i) + " Source", &f32_output_signal_names_, &channels_[i]->source_combo_idx_, &channels_[i]->source_);
+        helpers::combo_select("Channel " + std::to_string(i) + " Source", gui_if_->get_f32_output_signal_names(), &channels_[i]->source_combo_idx_, &channels_[i]->source_);
     }
 
     ImGui::Separator();
@@ -207,7 +175,7 @@ int gui_host_oscilloscope::render_interface() {
         ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EscapeClearsAll;
         
         if (ImGui::BeginTabItem("Trigger Output Signal")) {
-            helpers::combo_select("Trigger Source", &f32_output_signal_names_, &trigger_.osig_source_combo_idx, nullptr);
+            helpers::combo_select("Trigger Source", gui_if_->get_f32_output_signal_names(), &trigger_.osig_source_combo_idx, nullptr);
             {
                 float trigger_temp = trigger_.level;
                 if (ImGui::InputFloat("Trigger Level", &trigger_temp, 0.1f, 1.0f, "%.3f", input_text_flags)) {
@@ -248,7 +216,7 @@ int gui_host_oscilloscope::render_interface() {
 
         if (ImGui::BeginTabItem("Input Signal Stimulus")) {
             input_stimulus_->render_parameters();
-            helpers::combo_select("Stimulus signal input", &f32_input_signal_names_, &input_stim_combo_idx_, nullptr);
+            helpers::combo_select("Stimulus signal input", gui_if_->get_f32_input_signal_names(), &input_stim_combo_idx_, nullptr);
             trigger_.type = control_type::input_stimulus_s;
             if (ImGui::Button("Start stimulus")) {
                 sampler_state_ = sampler_state::waiting_trigger_s;

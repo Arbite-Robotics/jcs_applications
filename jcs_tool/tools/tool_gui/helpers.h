@@ -8,7 +8,7 @@
 #include <string>
 #include "imgui.h"
 #include "implot.h"
-
+#include "jcs_host.h"
 #include <iostream>
 
 
@@ -47,7 +47,21 @@
 namespace helpers {
     void HelpMarker(const char* desc);
 
+    // Combo signal selection helpers
     void combo_select(std::string const& name, std::vector<std::string> const* sources, int* current_idx, std::string* dest);
+    struct combo_source {
+        std::string source_;
+        int index_;
+        combo_source(std::string const& source, int const index);
+    };
+    void combo_select(std::string const& name, std::vector<std::string> const* sources, combo_source* source);
+    int build_output_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_output_signal_names);
+    int build_input_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_input_signal_names);
+    int signals_names_contains(std::vector<std::string>* signal_names, std::string const& name, int* found_index) ;
+    bool signals_check(std::vector<std::string>* signal_names_store, std::vector<std::string>* required_signal_names);
+    bool input_signals_check(std::vector<std::string>* input_signal_names_store, std::vector<std::string>* required_input_signal_names);
+    bool output_signals_check(std::vector<std::string>* output_signal_names_store, std::vector<std::string>* required_output_signal_names);
+
 
     // utility structure for realtime plot
     struct scrolling_buffer {
@@ -99,6 +113,19 @@ namespace helpers {
             }
         }
         
+        ImVec2 operator[](size_t index) {
+            if (data_.empty()) {
+                return ImVec2(0.0f, 0.0f);
+            } else if (data_.size() < max_size_ || offset_ == 0) {
+                if (index > data_.size()-1) {
+                    return data_.back();
+                }
+                return data_[index];
+            } else {
+                return data_[ (offset_ + index) % max_size_ ];
+            }
+        }
+
         void erase() {
             if (data_.size() > 0) {
                 data_.shrink(0);
@@ -214,6 +241,21 @@ namespace helpers {
         double step_rt(double p_error, double d_error) {
             return kp*p_error + kd*d_error;
         }
+    };
+
+    // Simple moving average filter
+    class ma_filter {
+    public:
+        ma_filter(double cutoff_hz, double dt);
+        ~ma_filter();
+
+        double step(double value);
+        void seed(double seed_value);
+        void cutoff_set(double cutoff_hz);
+    private:
+        double alpha_;
+        double u_prev_;
+        double dt_;
     };
 } // End namespace helpers
 

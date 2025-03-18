@@ -12,8 +12,8 @@
 
 #include "jcs_dev_motor_controller.h"
 
-gui_host_statistics::gui_host_statistics(jcs::jcs_host* host, std::string const& target_device) :
-    gui_type_base("Statistics", host, target_device),
+gui_host_statistics::gui_host_statistics(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) :
+    gui_type_base("Statistics", host, gui_if, target_device),
     to_mean_buffer_(2000),
     cycle_buffer_(2000),
     data_exchange_buffer_(2000),

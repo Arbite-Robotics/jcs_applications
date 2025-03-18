@@ -24,6 +24,14 @@ void rotate::start(double theta_start, double rotations, bool direction, double 
     state_ = state::rotating_s;
 }
 
+void rotate::start_speed(double theta_start, double speed_rads, bool direction, double time_s) {
+    theta_ = theta_start;
+    omega_ = speed_rads;
+    theta_increment_ = omega_ * dt_;
+    theta_total_ = omega_ * time_s;
+    state_ = state::rotating_s;
+}
+
 float rotate::step() {
     double theta_out = 0.0f;
 

@@ -9,8 +9,8 @@
 #include "ImGuiFileDialog.h"
 #include "jcs_user_external.h"
 
-gui_host_logger::gui_host_logger(jcs::jcs_host* host, std::string const& target_device) : 
-    gui_type_base("Host logger", host, target_device)
+gui_host_logger::gui_host_logger(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) : 
+    gui_type_base("Host logger", host, gui_if, target_device)
 {
     sampler_state_ = sampler_state::off_s;
     storage_count_ = 0;
@@ -32,27 +32,11 @@ int gui_host_logger::startup() {
 
     storage_length_ = sample_time_ * host_->base_frequency_get();
 
-    // Build a list of all available output float type, base rate signals
-    for (int i=0; i<host_->sig_output_sz_unsafe_rt(jcs::signal_type::float32_s, 0); i++) {
-        std::string node_name;
-        if (host_->sig_output_node_name_get(jcs::signal_type::float32_s, 0, i, &node_name) != jcs::RET_OK) {
-            std::cout << "gui_host_logger: Error getting node name for output signal at index " << i << "\n";
-            return jcs::RET_ERROR;
-        }
-        std::string name;
-        if (host_->sig_output_name_get(jcs::signal_type::float32_s, 0, i, &name) != jcs::RET_OK) {
-            std::cout << "gui_host_logger: Error getting output signal name at index " << i << "\n";
-            return jcs::RET_ERROR;
-        }
-        // Name will be node name + signal name
-        f32_output_signal_names_.push_back(node_name + "::" + name);
-    }
-
     // Update storage for new configured base rate
     // and set default sources
     for (int ch=0; ch<channels_.size(); ch++) {
         channels_[ch]->source_combo_idx_ = 0;
-        channels_[ch]->source_ = f32_output_signal_names_[0];
+        channels_[ch]->source_ = gui_if_->get_f32_output_signal_names()->at(0);
         channels_[ch]->update_sample_rate(host_->base_frequency_get());
         channels_[ch]->update_storage_length(sample_time_);
     }
@@ -144,7 +128,7 @@ int gui_host_logger::render_interface() {
     }
     // Channel Source
     for (int i=0; i<channels_.size(); i++) {
-        helpers::combo_select("Channel " + std::to_string(i) + " Source", &f32_output_signal_names_, &channels_[i]->source_combo_idx_, &channels_[i]->source_);
+        helpers::combo_select("Channel " + std::to_string(i) + " Source", gui_if_->get_f32_output_signal_names(), &channels_[i]->source_combo_idx_, &channels_[i]->source_);
     }
     // Display sample points
     {

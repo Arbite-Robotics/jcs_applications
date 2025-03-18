@@ -18,6 +18,29 @@ void helpers::HelpMarker(const char* desc) {
     }
 }
 
+
+void helpers::combo_select(std::string const& name, std::vector<std::string> const* sources, combo_source* source) {
+    const char* combo_preview_value = sources->at(source->index_).c_str();
+
+    ImGui::PushID(name.c_str());
+    if (ImGui::BeginCombo(name.c_str(), combo_preview_value, 0)) {
+        for (int i = 0; i < sources->size(); ++i) {
+            const bool is_selected = (source->index_ == i);
+            if (ImGui::Selectable(sources->at(i).c_str(), is_selected)) {
+                source->index_ = i;
+            }
+            // Set the initial focus when opening the combo
+            // (scrolling + keyboard navigation focus)
+            if (is_selected) {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        source->source_ = sources->at(source->index_);
+        // std::cout << "Got " << name << " " << *dest << "\n";
+        ImGui::EndCombo();
+    }
+    ImGui::PopID();
+}
 void helpers::combo_select(std::string const& name, std::vector<std::string> const* sources, int* current_idx, std::string* dest) {
     const char* combo_preview_value = sources->at(*current_idx).c_str();
 
@@ -42,6 +65,88 @@ void helpers::combo_select(std::string const& name, std::vector<std::string> con
     }
     ImGui::PopID();
 }
+
+helpers::combo_source::combo_source(std::string const& source, int const index) {
+    source_ = source;
+    index_ = index;
+}
+
+int helpers::build_output_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_output_signal_names) {
+    // Build a list of all available output float type, base rate signals
+    for (int i=0; i<host->sig_output_sz_unsafe_rt(jcs::signal_type::float32_s, 0); i++) {
+        std::string node_name;
+        if (host->sig_output_node_name_get(jcs::signal_type::float32_s, 0, i, &node_name) != jcs::RET_OK) {
+            std::cout << "build_output_list_names: Error getting node name for output signal at index " << i << "\n";
+            return jcs::RET_ERROR;
+        }
+        std::string name;
+        if (host->sig_output_name_get(jcs::signal_type::float32_s, 0, i, &name) != jcs::RET_OK) {
+            std::cout << "build_output_list_names: Error getting output signal name at index " << i << "\n";
+            return jcs::RET_ERROR;
+        }
+        // Name will be node name + signal name
+        f32_output_signal_names->push_back(node_name + "::" + name);
+    }
+    return jcs::RET_OK;
+}
+
+int helpers::build_input_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_input_signal_names) {
+    // Build a list of all available input float type, base rate signals
+    for (int i=0; i<host->sig_input_sz_unsafe_rt(jcs::signal_type::float32_s, 0); i++) {
+        std::string node_name;
+        if (host->sig_input_node_name_get(jcs::signal_type::float32_s, 0, i, &node_name) != jcs::RET_OK) {
+            std::cout << "build_input_signal_names_list: Error getting node name for input signal at index " << i << "\n";
+            return jcs::RET_ERROR;
+        }
+        std::string name;
+        if (host->sig_input_name_get(jcs::signal_type::float32_s, 0, i, &name) != jcs::RET_OK) {
+            std::cout << "build_input_signal_names_list: Error getting input signal name at index " << i << "\n";
+            return jcs::RET_ERROR;
+        }
+        // Name will be node name + signal name
+        f32_input_signal_names->push_back(node_name + "::" + name);
+    }
+    return jcs::RET_OK;
+}
+
+int helpers::signals_names_contains(std::vector<std::string>* signal_names, std::string const& name, int* found_index) {
+    for (int i=0; i<signal_names->size(); i++) {
+        if (signal_names->at(i).find(name) != std::string::npos) {
+            *found_index = i;
+            return jcs::RET_OK;
+        }
+    }
+    return jcs::RET_ERROR;
+}
+
+bool helpers::signals_check(std::vector<std::string>* signal_names_store, std::vector<std::string>* required_signal_names) {
+    bool got_all = true;
+    int dummy = 0;
+    for (int i=0; i<required_signal_names->size(); i++) {
+        if (signals_names_contains(signal_names_store, required_signal_names->at(i), &dummy) == jcs::RET_OK) {
+            ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0f, 1.0f), "%s ", required_signal_names->at(i).c_str());
+        } else {
+            ImGui::TextColored(ImVec4(0.5f, 0.0f, 0.0f, 1.0f), "%s ", required_signal_names->at(i).c_str());
+            got_all = false;
+        }
+        if (i != required_signal_names->size()-1) {
+            ImGui::SameLine();
+        }
+    }
+    return got_all;
+}
+
+bool helpers::input_signals_check(std::vector<std::string>* input_signal_names_store, std::vector<std::string>* required_input_signal_names) {
+    ImGui::Text("Required input signals check:  ");
+    ImGui::SameLine();
+    return signals_check(input_signal_names_store, required_input_signal_names);
+}
+bool helpers::output_signals_check(std::vector<std::string>* output_signal_names_store, std::vector<std::string>* required_output_signal_names) {
+    ImGui::Text("Required output signals check: ");
+    ImGui::SameLine();
+    return signals_check(output_signal_names_store, required_output_signal_names);
+}
+
 
 // Normalise [-pi, pi]
 double helpers::angle_norm_pipi(double angle) {
@@ -148,4 +253,25 @@ void helpers::plot_measurement::update_storage_length(int sample_time_s, int sam
     x_.resize(new_sample_length);
     y_.resize(new_sample_length);
     update_sample_rate(sample_rate_hz);
+}
+
+
+helpers::ma_filter::ma_filter(double cutoff_hz, double dt) {
+    u_prev_ = 0.0;
+    dt_ = dt;
+    cutoff_set(cutoff_hz);
+}
+helpers::ma_filter::~ma_filter() {}
+
+double helpers::ma_filter::step(double value) {
+    double delta = value - u_prev_;
+    double u_temp = u_prev_ + alpha_ * delta;
+    u_prev_ = u_temp;
+    return u_temp;
+}
+void helpers::ma_filter::seed(double seed_value) {
+    u_prev_ = seed_value;
+}
+void helpers::ma_filter::cutoff_set(double cutoff_hz) {
+    alpha_ = (dt_ / (dt_ + 1.0 / (2.0 * M_PI * cutoff_hz)));
 }

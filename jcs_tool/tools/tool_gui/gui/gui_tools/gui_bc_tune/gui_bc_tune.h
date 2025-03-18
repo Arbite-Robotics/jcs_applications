@@ -9,11 +9,12 @@
 #include <array>
 #include <string>
 #include "gui_type_base.h"
+#include "gui_interface.h"
 
 //////////////////////////////////////////////////////////////////////
 class gui_bc_tune : public gui_type_base {
 public:
-    gui_bc_tune(jcs::jcs_host* host, std::string const& target_device);
+    gui_bc_tune(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device);
     ~gui_bc_tune() {}
 
     int startup();

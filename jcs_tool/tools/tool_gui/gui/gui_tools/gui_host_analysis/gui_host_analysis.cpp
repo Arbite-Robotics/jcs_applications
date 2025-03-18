@@ -11,8 +11,8 @@
 
 #include <ETFE.hpp>
 
-gui_host_analysis::gui_host_analysis(jcs::jcs_host* host, std::string const& target_device) : 
-    gui_type_base("Host analysis", host, target_device),
+gui_host_analysis::gui_host_analysis(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) : 
+    gui_type_base("Host analysis", host, gui_if, target_device),
     sample_time_(1),
     sample_rate_(1000),
     plotter_(sample_time_, sample_rate_)
@@ -30,43 +30,12 @@ int gui_host_analysis::startup() {
     storage_length_ = sample_time_ * host_->base_frequency_get();
     sample_rate_ = host_->base_frequency_get();
 
-    // Build a list of all available output float type, base rate signals
-    for (int i=0; i<host_->sig_output_sz_unsafe_rt(jcs::signal_type::float32_s, 0); i++) {
-        std::string node_name;
-        if (host_->sig_output_node_name_get(jcs::signal_type::float32_s, 0, i, &node_name) != jcs::RET_OK) {
-            std::cout << "gui_host_analysis: Error getting node name for output signal at index " << i << "\n";
-            return jcs::RET_ERROR;
-        }
-        std::string name;
-        if (host_->sig_output_name_get(jcs::signal_type::float32_s, 0, i, &name) != jcs::RET_OK) {
-            std::cout << "gui_host_analysis: Error getting output signal name at index " << i << "\n";
-            return jcs::RET_ERROR;
-        }
-        // Name will be node name + signal name
-        f32_output_signal_names_.push_back(node_name + "::" + name);
-    }
-
     // Update storage for new configured base rate
     plotter_.update_storage_length(sample_time_, host_->base_frequency_get());
 
     // Configure input stimulus
     input_stimulus_ = new gui_stimulus(static_cast<double>(host_->base_frequency_get()));
 
-    // Build a list of all available input float type, base rate signals
-    for (int i=0; i<host_->sig_input_sz_unsafe_rt(jcs::signal_type::float32_s, 0); i++) {
-        std::string node_name;
-        if (host_->sig_input_node_name_get(jcs::signal_type::float32_s, 0, i, &node_name) != jcs::RET_OK) {
-            std::cout << "gui_host_analysis: Error getting node name for input signal at index " << i << "\n";
-            return jcs::RET_ERROR;
-        }
-        std::string name;
-        if (host_->sig_input_name_get(jcs::signal_type::float32_s, 0, i, &name) != jcs::RET_OK) {
-            std::cout << "gui_host_analysis: Error getting input signal name at index " << i << "\n";
-            return jcs::RET_ERROR;
-        }
-        // Name will be node name + signal name
-        f32_input_signal_names_.push_back(node_name + "::" + name);
-    }
     return jcs::RET_OK;
 }
 
@@ -166,8 +135,8 @@ int gui_host_analysis::render_interface() {
     }
 
     // Channel Source
-    helpers::combo_select("Input Source",  &f32_input_signal_names_,  &plotter_.source_combo_idx_y0_, &plotter_.source_y0_);
-    helpers::combo_select("Output Source", &f32_output_signal_names_, &plotter_.source_combo_idx_y1_, &plotter_.source_y1_);
+    helpers::combo_select("Input Source",  gui_if_->get_f32_input_signal_names(),  &plotter_.source_combo_idx_y0_, &plotter_.source_y0_);
+    helpers::combo_select("Output Source", gui_if_->get_f32_output_signal_names(), &plotter_.source_combo_idx_y1_, &plotter_.source_y1_);
 
     ImGui::Separator();
 
@@ -334,7 +303,7 @@ void gui_host_analysis::render_analysis() {
     static float overlap      = 0.5f;
 
     static double Fc[] = {100,100};
-    static bool etfe_need_update = true;
+    static bool etfe_need_update = false;
 
     static etfe::ETFE etfe(N, Fs, etfe::hamming(nwindow_opts[inwindow]), nwindow_opts[inwindow]/2, nfft_opts[infft]);        
 

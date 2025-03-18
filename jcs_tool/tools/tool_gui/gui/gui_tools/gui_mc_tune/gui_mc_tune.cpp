@@ -9,8 +9,8 @@
 #include "jcs_dev_motor_controller.h"
 
 //////////////////////////////////////////////////////////////////////
-gui_mc_tune::gui_mc_tune(jcs::jcs_host* host, std::string const& target_device) :
-    gui_type_base("Tuning", host, target_device)
+gui_mc_tune::gui_mc_tune(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) :
+    gui_type_base("Tuning", host, gui_if, target_device)
 {
     is_ready_ = false;
     test_step_response_[0] = new test_step_response("measure_test_axis_d");
@@ -29,15 +29,14 @@ int gui_mc_tune::step_rt() {
 }
 
 int gui_mc_tune::render() {
-
     // {
     //     int pp_temp = (int)pole_pairs_;
     //     if (ImGui::InputInt("Pole Pairs", &value, 1, 10, ImGuiInputTextFlags_EscapeClearsAll)) {
     //         pole_pairs_ = (uint32_t)value;
     //     }
     // }
-
-    ImGui::Text("Measure D/Q axis resistance and inductance");
+    ImGui::Text("Tuning and measure D/Q axis resistance and inductance");
+    ImGui::Separator();
     ImGui::Text("Notes:");
     ImGui::Text("- Ensure cogging compensation is disabled.");
     ImGui::Text("- Ensure device is not temperature clamped.");
@@ -61,19 +60,16 @@ int gui_mc_tune::render() {
         }
         is_ready_ = false;
     };
-
     /////////////////////////////////////////////////////////////////////////////////////////////
     // D/Q axis parameters
     // Get D axis parameters
     test_r_get_parameters("measure_test_axis_d", &test_r_parameters_[0]);
     test_l_get_parameters("measure_test_axis_d", &test_l_parameters_[0]);
-
     // Get Q axis parameters
     test_r_get_parameters("measure_test_axis_q", &test_r_parameters_[1]);
     test_l_get_parameters("measure_test_axis_q", &test_l_parameters_[1]);
 
     if (ImGui::Button("Measure phase resistance and inductance")) {
-
         {
             bool ctrl_is_temperature_clamped = false;
             PARAM_NOTIFY_CLEANUP_OK( host_->read_bool(target_device_,  "temperature_penalty_ctrl_is_clamped", &ctrl_is_temperature_clamped), "Parameter failed: temperature_penalty_ctrl_is_clamped", clean_up_on_error(); )
@@ -84,8 +80,6 @@ int gui_mc_tune::render() {
                 return jcs::RET_OK;
             }
         }
-
-
         CHECK_CLEANUP_OK( do_test_r(&test_r_parameters_[0], "measure_test_axis_d"), clean_up_on_error(); )
         CHECK_CLEANUP_OK( do_test_l(&test_l_parameters_[0], "measure_test_axis_d"), clean_up_on_error(); )
 
@@ -94,10 +88,10 @@ int gui_mc_tune::render() {
     }
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Current controller bandwidth
+    ImGui::NewLine();
     ImGui::Separator();
     ImGui::Text("Configure current controller bandwidth");
     ImGui::Text("(Depends on good phase resistance and inductance values)");
-
     {
         float value = i_ctl_bw_hz_;
         if (ImGui::InputFloat("Current controller bandwidth (Hz)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
@@ -117,10 +111,11 @@ int gui_mc_tune::render() {
         PARAM_NOTIFY_CLEANUP_OK( host_->write_float(target_device_, "i_q_kp", controller_gains_[1].kp), "Parameter failed: i_q_kp", clean_up_on_error(); )
         PARAM_NOTIFY_CLEANUP_OK( host_->write_float(target_device_, "i_q_ki", controller_gains_[1].ki), "Parameter failed: i_q_ki", clean_up_on_error(); )
     }
-    ImGui::Separator();
     /////////////////////////////////////////////////////////////////////////////////////////////
     // D/Q step response tests
     // Once test_step_response command is in - add a thing here to test the step resonse and display the plot
+    ImGui::Separator();
+    ImGui::NewLine();
     step_response_get_parameters(test_step_response_[0]);
     if (ImGui::Button("Start D-axis step response test")) {
         CHECK_CLEANUP_OK( step_response_do_test(test_step_response_[0]), clean_up_on_error(); )

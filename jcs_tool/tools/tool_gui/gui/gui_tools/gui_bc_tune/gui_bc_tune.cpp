@@ -9,8 +9,8 @@
 #include "jcs_dev_motor_controller.h"
 
 //////////////////////////////////////////////////////////////////////
-gui_bc_tune::gui_bc_tune(jcs::jcs_host* host, std::string const& target_device) :
-    gui_type_base("Tuning", host, target_device)
+gui_bc_tune::gui_bc_tune(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) :
+    gui_type_base("Tuning", host, gui_if, target_device)
 {
     channel_combo_idx_ = 0;
     active_channel_ = "controller_0";

@@ -10,11 +10,12 @@
 #include <string>
 #include "helpers.h"
 #include "gui_type_base.h"
+#include "gui_interface.h"
 
 //////////////////////////////////////////////////////////////////////
 class gui_mc_cogging : public gui_type_base {
 public:
-    gui_mc_cogging(jcs::jcs_host* host, std::string const& target_device);
+    gui_mc_cogging(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device);
     ~gui_mc_cogging() {}
 
     int startup();
@@ -38,11 +39,16 @@ private:
     };
     behaviour state_;
 
+    std::vector<std::string> required_input_signal_names_;
+    std::vector<std::string> required_output_signal_names_;
+
+    bool is_ready_;
+    bool can_start_;
+    int ready_test();
+
     // Storage
     std::vector<float> signals_out_;
     std::vector<float> signals_in_;
-    std::vector<std::string> f32_output_signal_names_;
-    std::vector<std::string> f32_input_signal_names_;
     // Indices into storage
     int fb_th_m_0_idx_;
     int fb_w_m_0_idx_;

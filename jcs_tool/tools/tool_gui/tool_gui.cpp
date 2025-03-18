@@ -127,6 +127,15 @@ int tool_gui::step_parameter_startup() {
     device_tree_ = host_->external_info_tree_get();
     build_store();
 
+    // Populate some nice helpers
+    // Build combo box names lists
+    if (helpers::build_input_signal_names_list(host_, &f32_input_signal_names_) != jcs::RET_OK) {
+        return jcs::RET_ERROR;
+    }
+    if (helpers::build_output_signal_names_list(host_, &f32_output_signal_names_) != jcs::RET_OK) {
+        return jcs::RET_ERROR;
+    }
+
     for (int i=0; i<store_.size(); i++) {
         if (store_[i]->startup() != jcs::RET_OK) {
             return jcs::RET_ERROR;
@@ -140,31 +149,32 @@ int tool_gui::step_parameter_startup() {
 
 void tool_gui::build_store() {
     for (int i=0; i<device_tree_->size(); i++) {
+        gui_interface* gui_if = static_cast<gui_interface*>(this);
         // Add any devices to the store
         if (device_tree_->at(i).node_type == "dev_host") {
-            store_.push_back(new gui_device_host(host_, device_tree_->at(i).name));
+            store_.push_back(new gui_device_host(host_, gui_if, device_tree_->at(i).name));
             host_ptr_ = static_cast<gui_device_host*>(store_[0]);
         }
-        else if (device_tree_->at(i).node_type == "dev_joint_controller")                { store_.push_back(new gui_device_joint_controller(host_, device_tree_->at(i).name)); }
-        else if (device_tree_->at(i).node_type == "dev_motor_controller")                { store_.push_back(new gui_device_motor_controller(host_, device_tree_->at(i).name)); }
-        else if (device_tree_->at(i).node_type == "dev_encoder_absolute")                { store_.push_back(new gui_device_encoder_absolute(host_, device_tree_->at(i).name)); }
-        else if (device_tree_->at(i).node_type == "dev_encoder_absolute_slide_by_hall")  { store_.push_back(new gui_device_encoder_absolute_slide_by_hall(host_, device_tree_->at(i).name)); }
-        else if (device_tree_->at(i).node_type == "dev_braking_chopper")                 { store_.push_back(new gui_device_braking_chopper(host_, device_tree_->at(i).name)); }
-        else if (device_tree_->at(i).node_type == "dev_encoder_relative")                { store_.push_back(new gui_device_encoder_relative(host_, device_tree_->at(i).name)); }
-        else if (device_tree_->at(i).node_type == "dev_strain_gauge")                    { store_.push_back(new gui_device_strain_gauge(host_, device_tree_->at(i).name)); }
-        else if (device_tree_->at(i).node_type == "dev_brake_clutch")                    { store_.push_back(new gui_device_brake_clutch(host_, device_tree_->at(i).name)); }
-        else if (device_tree_->at(i).node_type == "dev_analog")                          { store_.push_back(new gui_device_analog(host_, device_tree_->at(i).name)); }
-        else if (device_tree_->at(i).node_type == "dev_load_switch")                     { store_.push_back(new gui_device_load_switch(host_, device_tree_->at(i).name)); }
-        else if (device_tree_->at(i).node_type == "dev_thermal_simple")                  { store_.push_back(new gui_device_thermal_simple(host_, device_tree_->at(i).name)); }
+        else if (device_tree_->at(i).node_type == "dev_joint_controller")                { store_.push_back(new gui_device_joint_controller(host_, gui_if, device_tree_->at(i).name)); }
+        else if (device_tree_->at(i).node_type == "dev_motor_controller")                { store_.push_back(new gui_device_motor_controller(host_, gui_if, device_tree_->at(i).name)); }
+        else if (device_tree_->at(i).node_type == "dev_encoder_absolute")                { store_.push_back(new gui_device_encoder_absolute(host_, gui_if, device_tree_->at(i).name)); }
+        else if (device_tree_->at(i).node_type == "dev_encoder_absolute_slide_by_hall")  { store_.push_back(new gui_device_encoder_absolute_slide_by_hall(host_, gui_if, device_tree_->at(i).name)); }
+        else if (device_tree_->at(i).node_type == "dev_braking_chopper")                 { store_.push_back(new gui_device_braking_chopper(host_, gui_if, device_tree_->at(i).name)); }
+        else if (device_tree_->at(i).node_type == "dev_encoder_relative")                { store_.push_back(new gui_device_encoder_relative(host_, gui_if, device_tree_->at(i).name)); }
+        else if (device_tree_->at(i).node_type == "dev_strain_gauge")                    { store_.push_back(new gui_device_strain_gauge(host_, gui_if, device_tree_->at(i).name)); }
+        else if (device_tree_->at(i).node_type == "dev_brake_clutch")                    { store_.push_back(new gui_device_brake_clutch(host_, gui_if, device_tree_->at(i).name)); }
+        else if (device_tree_->at(i).node_type == "dev_analog")                          { store_.push_back(new gui_device_analog(host_, gui_if, device_tree_->at(i).name)); }
+        else if (device_tree_->at(i).node_type == "dev_load_switch")                     { store_.push_back(new gui_device_load_switch(host_, gui_if, device_tree_->at(i).name)); }
+        else if (device_tree_->at(i).node_type == "dev_thermal_simple")                  { store_.push_back(new gui_device_thermal_simple(host_, gui_if, device_tree_->at(i).name)); }
         // Nothing to do
         else { }
 
         // Any processes to add?
         for (int p=0; p<device_tree_->at(i).procs.size(); p++) {
-            if (device_tree_->at(i).procs[p].node_type == "proc_pid")                 { store_.push_back(new gui_process_pid(host_, device_tree_->at(i).procs[p].name)); }
-            else if (device_tree_->at(i).procs[p].node_type == "proc_pd")             { store_.push_back(new gui_process_pd(host_, device_tree_->at(i).procs[p].name)); }
-            else if (device_tree_->at(i).procs[p].node_type == "proc_interpolator")   { store_.push_back(new gui_process_interpolator(host_, device_tree_->at(i).procs[p].name)); }
-            else if (device_tree_->at(i).procs[p].node_type == "proc_transform")      { store_.push_back(new gui_process_transform(host_, device_tree_->at(i).procs[p].name)); }
+            if (device_tree_->at(i).procs[p].node_type == "proc_pid")                 { store_.push_back(new gui_process_pid(host_, gui_if, device_tree_->at(i).procs[p].name)); }
+            else if (device_tree_->at(i).procs[p].node_type == "proc_pd")             { store_.push_back(new gui_process_pd(host_, gui_if, device_tree_->at(i).procs[p].name)); }
+            else if (device_tree_->at(i).procs[p].node_type == "proc_interpolator")   { store_.push_back(new gui_process_interpolator(host_, gui_if, device_tree_->at(i).procs[p].name)); }
+            else if (device_tree_->at(i).procs[p].node_type == "proc_transform")      { store_.push_back(new gui_process_transform(host_, gui_if, device_tree_->at(i).procs[p].name)); }
             // Nothing to do
             else { }
         }
@@ -339,6 +349,34 @@ int tool_gui::render_display() {
     return jcs::RET_OK;
 
 }
+
+
+int tool_gui::start() {
+    if (host_->ready_devices() != jcs::RET_OK) {
+        return jcs::RET_ERROR;
+    }
+    if (host_->start() != jcs::RET_OK) {
+        return jcs::RET_ERROR;
+    }
+    run_status_ = run_status::running;
+    return jcs::RET_OK;
+}
+int tool_gui::stop() {
+    run_status_ = run_status::stopped;
+    if (host_->stop() != jcs::RET_OK) {
+        return jcs::RET_ERROR;
+    }
+    host_->dev_jc_ethercat_timing_print();
+    host_->process_timing_print();
+    return jcs::RET_OK;
+}
+std::vector<std::string>* tool_gui::get_f32_input_signal_names() {
+    return &f32_input_signal_names_;
+}
+std::vector<std::string>* tool_gui::get_f32_output_signal_names() {
+    return &f32_output_signal_names_;
+}
+
 
 // Extracted from
 // https://github.com/pthom/hello_imgui/tree/master/src/hello_imgui/impl

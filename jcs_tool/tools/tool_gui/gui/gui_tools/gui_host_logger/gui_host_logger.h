@@ -6,6 +6,7 @@
 
 #include "jcs_host.h"
 #include "gui_type_base.h"
+#include "gui_interface.h"
 #include "gui_device_host_base.h"
 #include <vector>
 #include <string>
@@ -16,7 +17,7 @@
 
 class gui_host_logger : public gui_type_base, public gui_device_host_base {
 public:
-    gui_host_logger(jcs::jcs_host* host, std::string const& target_device);
+    gui_host_logger(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device);
     ~gui_host_logger() {}
 
     int startup();
@@ -66,7 +67,6 @@ private:
     std::array<channel*, 8> channels_;
 
     std::vector<float> f32_osignal_store_;
-    std::vector<std::string> f32_output_signal_names_;
 
     double t_start_ns_;
     float t_s_;

@@ -6,13 +6,14 @@
 
 #include <string>
 #include "gui_device_base.h"
+#include "gui_interface.h"
 #include "jcs_host.h"
 
 #include "jcs_proc_pid.h"
 
 class gui_process_pid : public gui_device_base {
 public:
-    gui_process_pid(jcs::jcs_host* host, std::string const& name);
+    gui_process_pid(jcs::jcs_host* host, gui_interface* gui_if, std::string const& name);
     ~gui_process_pid() {}
 
     int startup();

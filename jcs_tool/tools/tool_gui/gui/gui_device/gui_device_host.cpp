@@ -10,15 +10,15 @@
 #include "imgui.h"
 #include "helpers.h"
 
-gui_device_host::gui_device_host(jcs::jcs_host* host, std::string const& name) :
-    gui_device_base(host, name)
+gui_device_host::gui_device_host(jcs::jcs_host* host, gui_interface* gui_if, std::string const& name) :
+    gui_device_base(host, gui_if, name)
 {
-    gui_host_logger_ = new gui_host_logger(host_, name_);
-    gui_plot_ = new gui_plot(host_, name_);
-    gui_host_statistics_ = new gui_host_statistics(host_, name_);
-    gui_host_oscilloscope_ = new gui_host_oscilloscope(host_, name_);
-    gui_host_analysis_ = new gui_host_analysis(host_, name_);
-    gui_host_2d_hopper_ = new gui_host_2d_hopper(host_, name_);
+    gui_host_logger_ = new gui_host_logger(host_, gui_if_, name_);
+    gui_plot_ = new gui_plot(host_, gui_if_, name_);
+    gui_host_statistics_ = new gui_host_statistics(host_, gui_if_, name_);
+    gui_host_oscilloscope_ = new gui_host_oscilloscope(host_, gui_if_, name_);
+    gui_host_analysis_ = new gui_host_analysis(host_, gui_if_, name_);
+    gui_host_2d_hopper_ = new gui_host_2d_hopper(host_, gui_if_, name_);
 
     gui_element_.push_back(static_cast<gui_type_base*>(gui_host_logger_));
     gui_element_.push_back(static_cast<gui_type_base*>(gui_plot_));

@@ -6,6 +6,7 @@
 
 #include "jcs_host.h"
 #include "gui_type_base.h"
+#include "gui_interface.h"
 #include "gui_device_host_base.h"
 #include <vector>
 #include <string>
@@ -15,7 +16,7 @@
 
 class gui_host_oscilloscope : public gui_type_base, public gui_device_host_base {
 public:
-    gui_host_oscilloscope(jcs::jcs_host* host, std::string const& target_device);
+    gui_host_oscilloscope(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device);
     ~gui_host_oscilloscope() {}
 
     int startup();
@@ -59,8 +60,6 @@ private:
 
     std::vector<float> f32_osignal_store_;
     std::vector<float> f32_isignal_store_;
-    std::vector<std::string> f32_output_signal_names_;
-    std::vector<std::string> f32_input_signal_names_;
 
     // Trigger
     enum class control_type {

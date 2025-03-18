@@ -6,13 +6,14 @@
 
 #include <string>
 #include "gui_device_base.h"
+#include "gui_interface.h"
 #include "jcs_host.h"
 
 #include "jcs_dev_joint_controller.h"
 
 class gui_device_joint_controller : public gui_device_base {
 public:
-    gui_device_joint_controller(jcs::jcs_host* host, std::string const& name);
+    gui_device_joint_controller(jcs::jcs_host* host, gui_interface* gui_if, std::string const& name);
     ~gui_device_joint_controller() {}
 
     int startup();
