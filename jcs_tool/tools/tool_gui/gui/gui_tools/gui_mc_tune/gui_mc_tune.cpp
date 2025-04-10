@@ -362,9 +362,23 @@ void gui_mc_tune::step_response_get_parameters(test_step_response* test) {
 int gui_mc_tune::step_response_do_test(test_step_response* test) {
     ImGui::PushID((test->axis_).c_str());
 
-    auto clean_up = []() {
+    float motor_Kt = 1.0f;
+
+    auto clean_up = [this, &motor_Kt]() {
         ImGui::PopID();
+        // Restore motor_Kt if it was normalised by the test
+        if (motor_Kt != 1.0f) {
+            PARAM_NOTIFY( host_->write_float(target_device_, "motor_Kt", motor_Kt),  "Parameter failed: motor_Kt" )
+        }
     };
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    // Make sure motor_Kt = 1 otherwise test command value will be scaled
+    // If it is not, use 1.0 for our tests, then restore the old value
+    PARAM_NOTIFY_CLEANUP_ERROR( host_->read_float(target_device_, "motor_Kt",  &motor_Kt), "Parameter failed: motor_Kt", clean_up(); )
+    if (motor_Kt != 1.0f) {
+        PARAM_NOTIFY_CLEANUP_ERROR( host_->write_float(target_device_, "motor_Kt", 1.0f),  "Parameter failed: motor_Kt", clean_up(); )
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // Do DQ axis step response test
