@@ -81,7 +81,7 @@ private:
     std::vector<channel*> channels_;
     bool using_filter_;
 
-    void channels_startup(std::string first_source, int storage_length, int sample_rate_hz);
+    void channels_startup(bool use_first_source, int storage_length, int sample_rate_hz);
     void channels_set_signals_size(int size);
     void channels_compute(int storage_length, int sample_rate_hz);
     void channels_clear();

@@ -43,7 +43,7 @@ int sampler::startup(double time_now_ns) {
         return jcs::RET_ERROR;
     }
     // Start the channels
-    channels_startup(f32_output_signal_names_->at(0), storage_length_, sample_rate_hz_);
+    channels_startup(false, storage_length_, sample_rate_hz_);
 
     t_start_ns_ = time_now_ns;
 
@@ -301,10 +301,19 @@ void sampler::channel::plot() {
     ImGui::PopID();
 }
 
-void sampler::channels_startup(std::string first_source, int storage_length, int sample_rate_hz) {
+void sampler::channels_startup(bool use_first_source, int storage_length, int sample_rate_hz) {
     double cutoff_hz = (double)sample_rate_hz / 2.0;
+
     for (int i=0; i<channels_.size(); i++) {
-        channels_[i]->source_ = first_source;
+        if (use_first_source) {
+            channels_[i]->source_ = f32_output_signal_names_->at(0);
+            channels_[i]->source_combo_index_ = 0;
+        } else {
+            // use incremental sources
+            int source_idx = i >= f32_output_signal_names_->size() ? (f32_output_signal_names_->size()-1) : i;
+            channels_[i]->source_ = f32_output_signal_names_->at(source_idx);
+            channels_[i]->source_combo_index_ = source_idx;
+        }
     }
     channels_compute(storage_length, sample_rate_hz);
 }
