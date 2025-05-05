@@ -240,22 +240,36 @@ void param_float32_vec::render(std::string const& target_device) {
 
     // Watch
     ImGui::TableNextColumn();
-    // Do nothing
+    // Only watch if small enough
+    if (read_val_.size() <= 4) {
+        ImGui::Checkbox("##watch", &watch_);
+        if (watch_) {
+            read(target_device);
+        }
+    }
 
     ImGui::TableNextColumn();
     ImGui::SetNextItemWidth(-FLT_MIN);
-    if (ImGui::BeginPopupContextItem("float_output")) {
-        ImGui::Text("Vector values:");
-        for (int i=0; i<write_val_.size(); i++) {
-            ImGui::PushID(i);
-            ImGui::Text("Element: %u, %4.4f", i, read_val_[i]);
-            ImGui::PopID();
+    // If the vector is small enough, display the elements, otherwise open a popup to display them
+    if (read_val_.size() <= 4) {
+        if (read_val_.size() == 1) { ImGui::Text("%.6f", read_val_[0]); }
+        if (read_val_.size() == 2) { ImGui::Text("%.4f, %.4f", read_val_[0], read_val_[1]); }
+        if (read_val_.size() == 3) { ImGui::Text("%.4f, %.4f, %.4f", read_val_[0], read_val_[1], read_val_[2]); }
+        if (read_val_.size() == 4) { ImGui::Text("%.3f, %.3f, %.3f, %.3f", read_val_[0], read_val_[1], read_val_[2], read_val_[3]); }
+    } else {
+        if (ImGui::BeginPopupContextItem("float_output")) {
+            ImGui::Text("Vector values:");
+            for (int i=0; i<read_val_.size(); i++) {
+                ImGui::PushID(i);
+                ImGui::Text("Element: %u, %4.4f", i, read_val_[i]);
+                ImGui::PopID();
+            }
+            ImGui::EndPopup();
         }
-        ImGui::EndPopup();
-    }
-    ImGui::SetNextItemWidth(-FLT_MIN);
-    if (ImGui::Button("Read vector values")) {
-        ImGui::OpenPopup("float_output");
+        ImGui::SetNextItemWidth(-FLT_MIN);
+        if (ImGui::Button("Read vector values")) {
+            ImGui::OpenPopup("float_output");
+        }
     }
 
     ImGui::PopID();

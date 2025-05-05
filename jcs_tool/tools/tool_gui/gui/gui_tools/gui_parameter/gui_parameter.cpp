@@ -117,7 +117,7 @@ int gui_parameter::render() {
 
         ImGui::TableSetupColumn("Name",      ImGuiTableColumnFlags_WidthFixed, 300.0f);
         ImGui::TableSetupColumn("Type",      ImGuiTableColumnFlags_WidthFixed, 50.0f);
-        ImGui::TableSetupColumn("Length",    ImGuiTableColumnFlags_WidthFixed, 50.0f);
+        ImGui::TableSetupColumn("Len",       ImGuiTableColumnFlags_WidthFixed, 25.0f);
         ImGui::TableSetupColumn("Write Val", ImGuiTableColumnFlags_WidthFixed, 180.0f);
         ImGui::TableSetupColumn("Write",     ImGuiTableColumnFlags_WidthFixed, 50.0f);
         ImGui::TableSetupColumn("Read",      ImGuiTableColumnFlags_WidthFixed, 50.0f);
