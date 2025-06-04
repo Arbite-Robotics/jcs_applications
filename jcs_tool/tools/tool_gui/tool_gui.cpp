@@ -33,6 +33,7 @@ tool_gui::tool_gui(std::string name, jcs::jcs_host* host) :
 {
     host_ptr_ = nullptr;
     device_select_idx_ = 0;
+    gui_is_init_ = false;
     run_status_ = run_status::stopped;
 }
 
@@ -78,13 +79,14 @@ int tool_gui::step_parameter_startup() {
 
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit()) {
-        return 1;
+        return jcs::RET_ERROR;
     }
 
     // Create window with graphics context
     window_ = glfwCreateWindow(1280, 720, "A R B I T E   [host_interface]", nullptr, nullptr);
-    if (window_ == nullptr)
-        return 1;
+    if (window_ == nullptr) {
+        return jcs::RET_ERROR;
+    }
     glfwMakeContextCurrent(window_);
 
     // Note: vsync doesnt seem to be very stable. Makes the plots wobbly
@@ -102,6 +104,9 @@ int tool_gui::step_parameter_startup() {
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window_, true);
     ImGui_ImplOpenGL2_Init();
+
+    // We need to call gui shutdown stuff when we exit from now on
+    gui_is_init_ = true;
 
     // Load Fonts
     // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -226,13 +231,15 @@ int tool_gui::step_parameter() {
 
 int tool_gui::step_parameter_shutdown() {
     // Cleanup
-    ImGui_ImplOpenGL2_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-    ImPlot::DestroyContext();
+    if (gui_is_init_) {
+        ImGui_ImplOpenGL2_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+        ImPlot::DestroyContext();
 
-    glfwDestroyWindow(window_);
-    glfwTerminate();
+        glfwDestroyWindow(window_);
+        glfwTerminate();
+    }
 
     return jcs::RET_OK;
 }

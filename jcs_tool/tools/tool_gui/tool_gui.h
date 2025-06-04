@@ -67,6 +67,7 @@ private:
     GLFWwindow* window_;
     ImVec4 clear_color_;
     std::chrono::system_clock::time_point t_next_;
+    bool gui_is_init_;
 
     void style_dracula_darker();
 };
