@@ -153,15 +153,16 @@ int gui_mc_encoder::render_zero_encoder() {
                 PARAM_NOTIFY_ERROR( host_->read_float(target_device_, "encoder_1_position_offset", &encoder_position_offset_), "Parameter failed: encoder_1_position_offset" )
                 break;
         }
-
     }
+
+    ImGui::Separator();
     switch (active_encoder_.index_) {
         default:
         case 0:
-            ImGui::Text("encoder_0_position_offset: %.6f", encoder_position_offset_);
+            helpers::result_text_copyable("encoder_0_position_offset: ", encoder_position_offset_);
             break;
         case 1:
-            ImGui::Text("encoder_1_position_offset: %.6f", encoder_position_offset_);
+            helpers::result_text_copyable("encoder_1_position_offset: ", encoder_position_offset_);
             break;
     }
 
