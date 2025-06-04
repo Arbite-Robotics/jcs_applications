@@ -93,6 +93,13 @@ void helpers::listbox_select(std::string const& name, std::vector<std::string>* 
     ImGui::PopID();
 }
 
+void helpers::result_text_copyable(std::string const& text, float const& result) {
+    std::string res_text = text + std::to_string(result);
+    ImGui::PushID(res_text.c_str());
+    ImGui::InputText("", &res_text, ImGuiInputTextFlags_ReadOnly);
+    ImGui::PopID();
+}
+
 int helpers::build_output_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_output_signal_names) {
     // Build a list of all available output float type, base rate signals
     for (int i=0; i<host->sig_output_sz_unsafe_rt(jcs::signal_type::float32_s, 0); i++) {
