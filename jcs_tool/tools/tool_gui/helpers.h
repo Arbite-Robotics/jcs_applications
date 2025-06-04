@@ -10,6 +10,7 @@
 #include "implot.h"
 #include "jcs_host.h"
 #include <iostream>
+#include "imgui_stdlib.h"
 
 
 #define PARAM_NOTIFY(cmd, str) if (cmd != jcs::RET_OK) {     \
@@ -55,6 +56,8 @@ namespace helpers {
     };
     void combo_select(std::string const& name, std::vector<std::string> const* sources, combo_source* source);
     void listbox_select(std::string const& name, std::vector<std::string>* sources, int display_max_items, int* current_idx, std::string* dest);
+    void result_text_copyable(std::string const& text, float const& result);
+
     int build_output_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_output_signal_names);
     int build_input_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_input_signal_names);
     int signals_names_contains(std::vector<std::string>* signal_names, std::string const& name, int* found_index) ;
