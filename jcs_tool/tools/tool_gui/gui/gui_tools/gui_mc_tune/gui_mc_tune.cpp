@@ -13,8 +13,8 @@ gui_mc_tune::gui_mc_tune(jcs::jcs_host* host, gui_interface* gui_if, std::string
     gui_type_base("Tuning", host, gui_if, target_device)
 {
     is_ready_ = false;
-    test_step_response_[0] = new test_step_response("measure_test_axis_d");
-    test_step_response_[1] = new test_step_response("measure_test_axis_q");
+    test_step_response_[0] = new test_step_response("d");
+    test_step_response_[1] = new test_step_response("q");
     pole_pairs_ = 7;
     i_ctl_bw_hz_ = 500.0f;
     i_ctl_bw_rads_ = 0.0f;
@@ -63,11 +63,11 @@ int gui_mc_tune::render() {
     /////////////////////////////////////////////////////////////////////////////////////////////
     // D/Q axis parameters
     // Get D axis parameters
-    test_r_get_parameters("measure_test_axis_d", &test_r_parameters_[0]);
-    test_l_get_parameters("measure_test_axis_d", &test_l_parameters_[0]);
+    test_r_get_parameters("d", &test_r_parameters_[0]);
+    test_l_get_parameters("d", &test_l_parameters_[0]);
     // Get Q axis parameters
-    test_r_get_parameters("measure_test_axis_q", &test_r_parameters_[1]);
-    test_l_get_parameters("measure_test_axis_q", &test_l_parameters_[1]);
+    test_r_get_parameters("q", &test_r_parameters_[1]);
+    test_l_get_parameters("q", &test_l_parameters_[1]);
 
     if (ImGui::Button("Measure phase resistance and inductance")) {
         {
@@ -80,11 +80,11 @@ int gui_mc_tune::render() {
                 return jcs::RET_OK;
             }
         }
-        CHECK_CLEANUP_OK( do_test_r(&test_r_parameters_[0], "measure_test_axis_d"), clean_up_on_error(); )
-        CHECK_CLEANUP_OK( do_test_l(&test_l_parameters_[0], "measure_test_axis_d"), clean_up_on_error(); )
+        CHECK_CLEANUP_OK( do_test_r(&test_r_parameters_[0], "d"), clean_up_on_error(); )
+        CHECK_CLEANUP_OK( do_test_l(&test_l_parameters_[0], "d"), clean_up_on_error(); )
 
-        CHECK_CLEANUP_OK( do_test_r(&test_r_parameters_[1], "measure_test_axis_q"), clean_up_on_error(); )
-        CHECK_CLEANUP_OK( do_test_l(&test_l_parameters_[1], "measure_test_axis_q"), clean_up_on_error(); )
+        CHECK_CLEANUP_OK( do_test_r(&test_r_parameters_[1], "q"), clean_up_on_error(); )
+        CHECK_CLEANUP_OK( do_test_l(&test_l_parameters_[1], "q"), clean_up_on_error(); )
     }
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Current controller bandwidth
@@ -101,8 +101,8 @@ int gui_mc_tune::render() {
     i_ctl_bw_rads_ = i_ctl_bw_hz_ * 2.0f * (float)M_PI;
     
     ImGui::Text("Current controller bandwidth %.3f (Rad/s)", i_ctl_bw_rads_);
-    compute_controller_gains("measure_test_axis_d", &test_r_parameters_[0], &test_l_parameters_[0], &controller_gains_[0]);
-    compute_controller_gains("measure_test_axis_q", &test_r_parameters_[1], &test_l_parameters_[1], &controller_gains_[1]);
+    compute_controller_gains("d", &test_r_parameters_[0], &test_l_parameters_[0], &controller_gains_[0]);
+    compute_controller_gains("q", &test_r_parameters_[1], &test_l_parameters_[1], &controller_gains_[1]);
 
     if (ImGui::Button("Write current controller gains")) {
         PARAM_NOTIFY_CLEANUP_OK( host_->write_float(target_device_, "i_d_kp", controller_gains_[0].kp), "Parameter failed: i_d_kp", clean_up_on_error(); )
@@ -142,18 +142,10 @@ void gui_mc_tune::compute_controller_gains(std::string const& axis, test_r* r_st
     gains->kp = i_ctl_bw_rads_ * l_store->result;
     gains->ki = i_ctl_bw_rads_ * r_store->result;
     ImGui::Text("Current controller axis: %s", axis.c_str());
-    {
-        float value = gains->kp;
-        if (ImGui::InputFloat("Kp", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
-            gains->kp = value;
-        }
-    }
-    {
-        float value = gains->ki;
-        if (ImGui::InputFloat("Ki", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
-            gains->ki = value;
-        }
-    }
+
+    helpers::result_text_copyable("i_" + axis + "_kp: ", gains->kp);
+    helpers::result_text_copyable("i_" + axis + "_ki: ", gains->ki);
+
     ImGui::PopID();
 }
 
@@ -176,6 +168,7 @@ void gui_mc_tune::test_r_get_parameters(std::string const& axis, test_r* storage
     }
 
     ImGui::Text("Measured resistance (Ohms): %.6f", storage->result);
+    helpers::result_text_copyable("motor_R" + axis + ": ", storage->result);
     ImGui::PopID();
 }
 
@@ -209,6 +202,7 @@ void gui_mc_tune::test_l_get_parameters(std::string const& axis, test_l* storage
         }
     }
     ImGui::Text("Measured inductance (H): %.6f, %.6f (uH)", storage->result, storage->result*1000000.0f);
+    helpers::result_text_copyable("motor_L" + axis + ": ", storage->result);
     ImGui::PopID();
 }
 
@@ -234,9 +228,10 @@ int gui_mc_tune::standby_test() {
 int gui_mc_tune::do_test_r(test_r* storage, std::string const& axis) {
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // Measure DQ resistance
-    std::cout << "Reading " << axis << " phase resistance\n";
+    std::cout << "Reading " << axis << " axis phase resistance\n";
     // Set parameters first
-    PARAM_NOTIFY_ERROR( host_->write_enum(target_device_,   "test_rs_dq_test_axis",        axis), "Parameter failed: test_rs_dq_test_axis" )
+    std::string meas_axis = axis == "d" ? "measure_test_axis_d" : "measure_test_axis_q";
+    PARAM_NOTIFY_ERROR( host_->write_enum(target_device_,   "test_rs_dq_test_axis",        meas_axis), "Parameter failed: test_rs_dq_test_axis" )
     PARAM_NOTIFY_ERROR( host_->write_float(target_device_,  "test_rs_v_dq_test_amplitude", storage->amplitude), "Parameter failed: test_rs_v_dq_test_amplitude" )
     PARAM_NOTIFY_ERROR( host_->write_uint16(target_device_, "test_rs_test_time_ms",        storage->time_ms), "Parameter failed: test_rs_test_time_ms" )
     // Configure controller mode for resistance measurement
@@ -264,10 +259,10 @@ int gui_mc_tune::do_test_r(test_r* storage, std::string const& axis) {
 
     // Result is stored in motor_Rd
     storage->result = 0.0f;
-    if (axis == "measure_test_axis_d") {
+    if (axis == "d") {
         PARAM_NOTIFY_ERROR( host_->read_float(target_device_, "motor_Rd", &storage->result), "Res read failed: motor_Rd" )
     } else
-    if (axis == "measure_test_axis_q") {
+    if (axis == "q") {
         PARAM_NOTIFY_ERROR( host_->read_float(target_device_, "motor_Rq", &storage->result), "Res read failed: motor_Rq" )
     }
     std::cout << "Got resistance: " << storage->result << " Ohms\n\n";
@@ -278,9 +273,10 @@ int gui_mc_tune::do_test_r(test_r* storage, std::string const& axis) {
 int gui_mc_tune::do_test_l(test_l* storage, std::string const& axis) {
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // Measure DQ resistance
-    std::cout << "Reading " << axis << " phase inductance\n";
+    std::cout << "Reading " << axis << " axis phase inductance\n";
     // Set parameters first
-    PARAM_NOTIFY_ERROR( host_->write_enum(target_device_,   "test_ls_dq_test_axis",   axis), "Parameter failed: test_ls_dq_test_axis" )
+    std::string meas_axis = axis == "d" ? "measure_test_axis_d" : "measure_test_axis_q";
+    PARAM_NOTIFY_ERROR( host_->write_enum(target_device_,   "test_ls_dq_test_axis",   meas_axis), "Parameter failed: test_ls_dq_test_axis" )
     PARAM_NOTIFY_ERROR( host_->write_float(target_device_,  "test_ls_v_dq_bias",      storage->bias),     "Parameter failed: test_ls_v_dq_bias" )
     PARAM_NOTIFY_ERROR( host_->write_float(target_device_,  "test_ls_v_dq_amplitude", storage->amplitude),"Parameter failed: test_ls_v_dq_amplitude" )
     PARAM_NOTIFY_ERROR( host_->write_float(target_device_,  "test_ls_test_freq_hz",   storage->frequency),"Parameter failed: test_ls_test_freq_hz" )
@@ -311,10 +307,10 @@ int gui_mc_tune::do_test_l(test_l* storage, std::string const& axis) {
 
     // Result is stored in motor_Lx
     storage->result = 0.0f;
-    if (axis == "measure_test_axis_d") {
+    if (axis == "d") {
         PARAM_NOTIFY_ERROR( host_->read_float(target_device_, "motor_Ld", &storage->result), "Res read failed: motor_Ld" )
     } else
-    if (axis == "measure_test_axis_q") {
+    if (axis == "q") {
         PARAM_NOTIFY_ERROR( host_->read_float(target_device_, "motor_Lq", &storage->result), "Res read failed: motor_Lq" )
     }
     std::cout << "Got inductance: " << storage->result << " H\n\n";
@@ -383,29 +379,29 @@ int gui_mc_tune::step_response_do_test(test_step_response* test) {
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // Do DQ axis step response test
     // Set parameters first
-    PARAM_NOTIFY_CLEANUP_ERROR( host_->write_enum(target_device_,   "test_step_response_dq_test_axis", test->axis_), "Parameter failed: test_rs_dq_test_axis", clean_up(); )
+    std::string meas_axis = test->axis_ == "d" ? "measure_test_axis_d" : "measure_test_axis_q";
+    PARAM_NOTIFY_CLEANUP_ERROR( host_->write_enum(target_device_,   "test_step_response_dq_test_axis", meas_axis), "Parameter failed: test_rs_dq_test_axis", clean_up(); )
     PARAM_NOTIFY_CLEANUP_ERROR( host_->write_float(target_device_,  "test_step_response_amplitude",    test->amplitude_), "Parameter failed: test_rs_v_dq_test_amplitude", clean_up(); )
     PARAM_NOTIFY_CLEANUP_ERROR( host_->write_uint16(target_device_, "test_step_response_time_ms",      test->time_ms_), "Parameter failed: test_rs_test_time_ms", clean_up(); )
     // Configure controller mode for the test
     PARAM_NOTIFY_CLEANUP_ERROR( host_->write_enum(target_device_,   "controller_mode", "test_dq_step_response"), "Parameter failed: controller_mode", clean_up(); )
     // Configure the oscilloscope
-    // Set the trigger
-    if (test->axis_ == "measure_test_axis_d") {
+    PARAM_NOTIFY_CLEANUP_ERROR( host_->write_enum(target_device_,   "oscilloscope_trigger_config", "osc_trigger_rising"), "Parameter failed: oscilloscope_trigger_config", clean_up(); )
+    PARAM_NOTIFY_CLEANUP_ERROR( host_->write_uint32(target_device_, "oscilloscope_sample_rate_hz", 30000), "Parameter failed: oscilloscope_sample_rate_hz", clean_up(); )
+    PARAM_NOTIFY_CLEANUP_ERROR( host_->write_float(target_device_,  "oscilloscope_trigger_level", 0.01f),  "Parameter failed: oscilloscope_trigger_level", clean_up(); )
+    PARAM_NOTIFY_CLEANUP_ERROR( host_->write_uint32(target_device_, "oscilloscope_trigger_buffer_position", 0), "Parameter failed: oscilloscope_trigger_buffer_position", clean_up(); )
+    if (test->axis_ == "d") {
         PARAM_NOTIFY_CLEANUP_ERROR( host_->write_enum(target_device_,  "oscilloscope_trigger_source",   "mc_osc_foc_i_d_cmd"), "Parameter failed: oscilloscope_trigger_source", clean_up(); )
-        PARAM_NOTIFY_CLEANUP_ERROR( host_->write_float(target_device_, "oscilloscope_trigger_level",    0.01f),  "Parameter failed: oscilloscope_trigger_level", clean_up(); )
         PARAM_NOTIFY_CLEANUP_ERROR( host_->write_enum(target_device_,  "oscilloscope_channel_0_source", "mc_osc_foc_i_d"), "Parameter failed: oscilloscope_channel_0_source", clean_up(); )
     } else
-    if (test->axis_ == "measure_test_axis_q") {
+    if (test->axis_ == "q") {
         PARAM_NOTIFY_CLEANUP_ERROR( host_->write_enum(target_device_,  "oscilloscope_trigger_source",   "mc_osc_foc_i_q_cmd"), "Parameter failed: oscilloscope_trigger_source", clean_up(); )
-        PARAM_NOTIFY_CLEANUP_ERROR( host_->write_float(target_device_, "oscilloscope_trigger_level",    0.01f),  "Parameter failed: oscilloscope_trigger_level", clean_up(); )
         PARAM_NOTIFY_CLEANUP_ERROR( host_->write_enum(target_device_,  "oscilloscope_channel_0_source", "mc_osc_foc_i_q"), "Parameter failed: oscilloscope_channel_0_source", clean_up(); )
     }
     else {
         clean_up();
         return jcs::RET_ERROR;
     }
-    // Configure
-    PARAM_NOTIFY_CLEANUP_ERROR( host_->write_uint32(target_device_,  "oscilloscope_sample_rate_hz", 30000), "Parameter failed: oscilloscope_sample_rate_hz", clean_up(); )
     // Set oscilloscope to wait
     PARAM_NOTIFY_CLEANUP_ERROR( host_->write_command(target_device_, "oscilloscope_wait_trigger"), "Parameter failed: oscilloscope_wait_trigger", clean_up(); )
     // Starting the controller starts the test
@@ -438,7 +434,7 @@ void gui_mc_tune::test_step_response::plot() {
 
     ImGui::Checkbox("Show measurement cursors", &plot_cursors_);
 
-    if (ImPlot::BeginPlot(axis_.c_str())) {
+    if (ImPlot::BeginPlot(("Axis: " + axis_).c_str())) {
         ImPlot::SetupAxes("t", "y");
 
         if (plot_cursors_) {
