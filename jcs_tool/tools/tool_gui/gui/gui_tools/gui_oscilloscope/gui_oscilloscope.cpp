@@ -150,19 +150,14 @@ int gui_oscilloscope::render_interface() {
         ImGui::BeginDisabled();
     }
 
-    // Cleanup helper function
-    auto clean_up_on_error = [&]() {
-        if (!is_done_sampling_) {
-            ImGui::EndDisabled();
-            is_done_sampling_ = true;
-        }
-    };
-
     ImGui::SameLine();
     bool is_waiting_for_trigger = false;
     if (ImGui::Button("Wait For Trigger")) {
-        PARAM_NOTIFY_CLEANUP_ERROR( host_->write_command(target_device_, "oscilloscope_wait_trigger"), "Parameter failed: oscilloscope_wait_trigger", clean_up_on_error(); )
         is_waiting_for_trigger = true;
+        if (host_->write_command(target_device_, "oscilloscope_wait_trigger") != jcs::RET_OK) {
+            std::cout << "Parameter failed: oscilloscope_wait_trigger\n";
+            is_waiting_for_trigger = false;
+        }
     }
 
     if (ImGui::Button("Get All Channels")) {
