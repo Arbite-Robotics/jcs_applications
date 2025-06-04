@@ -274,11 +274,24 @@ int tool_gui::render_display() {
             host_->dev_jc_ethercat_timing_print();
             host_->process_timing_print();
         }
-    } 
+    }
     ImGui::SameLine();
     if (ImGui::Button("RESET")) {
         run_status_ = run_status::stopped;
         host_->reset();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("ESTOP")) {
+        run_status_ = run_status::stopped;
+        host_->trigger_estop();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Host Error/Info")) {
+        host_->host_overrun_counts_print();
+        host_->device_error_counts_print();
+        host_->device_error_estop_print();
+        host_->process_timing_print();
+        host_->dev_jc_ethercat_timing_print();
     }
     ImGui::SameLine();
     if (ImGui::Button("SHUTDOWN")) {
@@ -288,7 +301,7 @@ int tool_gui::render_display() {
         // Signal to shutdown
         ImGui::End();
         return jcs::RET_ERROR;
-    } 
+    }
     ImGui::SameLine();
 
     // If an estop is present, has_estop will only return true for one call
