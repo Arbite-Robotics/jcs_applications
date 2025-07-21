@@ -26,7 +26,7 @@ void stimulus::stop() {
     state_ = state::off_s;
 }
 bool stimulus::is_running() {
-    return state_ == state::running_s;
+    return (state_ == state::running_s) || (state_ == state::init_s);
 }
 float stimulus::value_get() {
     return static_cast<float>(value_);
