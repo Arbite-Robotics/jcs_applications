@@ -114,13 +114,13 @@ int gui_oscilloscope::render_interface() {
         for (int i=0; i<n_channels_; i++) {
             std::cout << "oscilloscope_channel_" + std::to_string(i) + "_source: " << channels_[i]->source_ << "\n";
         }
-        PARAM_NOTIFY_ERROR( host_->write_uint32(target_device_, "oscilloscope_sample_rate_hz", sample_rate_),    "Parameter failed: oscilloscope_sample_rate_hz" )
-        PARAM_NOTIFY_ERROR( host_->write_enum(target_device_,   "oscilloscope_trigger_source", trigger_source_), "Parameter failed: oscilloscope_trigger_source" )
-        PARAM_NOTIFY_ERROR( host_->write_enum(target_device_,   "oscilloscope_trigger_config", trigger_config_), "Parameter failed: oscilloscope_trigger_config" )
-        PARAM_NOTIFY_ERROR( host_->write_float(target_device_,  "oscilloscope_trigger_level",  trigger_level_),  "Parameter failed: oscilloscope_trigger_level" )
-        PARAM_NOTIFY_ERROR( host_->write_uint32(target_device_, "oscilloscope_trigger_buffer_position", trigger_buffer_position_), "Parameter failed: oscilloscope_trigger_buffer_position" )
+        PARAM_NOTIFY( host_->write_uint32(target_device_, "oscilloscope_sample_rate_hz", sample_rate_),    "Parameter failed: oscilloscope_sample_rate_hz" )
+        PARAM_NOTIFY( host_->write_enum(target_device_,   "oscilloscope_trigger_source", trigger_source_), "Parameter failed: oscilloscope_trigger_source" )
+        PARAM_NOTIFY( host_->write_enum(target_device_,   "oscilloscope_trigger_config", trigger_config_), "Parameter failed: oscilloscope_trigger_config" )
+        PARAM_NOTIFY( host_->write_float(target_device_,  "oscilloscope_trigger_level",  trigger_level_),  "Parameter failed: oscilloscope_trigger_level" )
+        PARAM_NOTIFY( host_->write_uint32(target_device_, "oscilloscope_trigger_buffer_position", trigger_buffer_position_), "Parameter failed: oscilloscope_trigger_buffer_position" )
         for (int i=0; i<n_channels_; i++) {
-            PARAM_NOTIFY_ERROR( host_->write_enum(target_device_,  "oscilloscope_channel_" + std::to_string(i) + "_source", channels_[i]->source_), "Parameter failed: oscilloscope_channel_" + std::to_string(i) + "_source" )
+            PARAM_NOTIFY( host_->write_enum(target_device_,  "oscilloscope_channel_" + std::to_string(i) + "_source", channels_[i]->source_), "Parameter failed: oscilloscope_channel_" + std::to_string(i) + "_source" )
         }
         std::cout << "Done\n";
     }
