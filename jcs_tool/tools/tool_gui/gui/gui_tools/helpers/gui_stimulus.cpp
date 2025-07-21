@@ -10,6 +10,7 @@ gui_stimulus::gui_stimulus(double sample_rate_hz) {
     stimulus_source_.push_back(new stimulus_ramp(sample_rate_hz));
     stimulus_source_.push_back(new stimulus_chirp(sample_rate_hz));
     stimulus_source_.push_back(new stimulus_step(sample_rate_hz));
+    stimulus_source_.push_back(new stimulus_const(sample_rate_hz));
 
     for (int i=0; i<stimulus_source_.size(); i++) {
         source_names_.push_back(stimulus_source_[i]->name_get());

@@ -93,4 +93,19 @@ private:
     double test_value_;
 };
 
+////////////////////////////////////////////////////////////////////////////
+class stimulus_const : public stimulus {
+public:
+    stimulus_const(double sample_rate_hz);
+    ~stimulus_const() {}
+
+    void step_rt();
+    void render_parameters();
+
+private:
+    double const_value_;
+    double const_time_s_;
+    double t_;
+};
+
 #endif

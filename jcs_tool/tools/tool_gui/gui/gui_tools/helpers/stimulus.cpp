@@ -241,3 +241,52 @@ void stimulus_step::step_rt() {
             break;
     }
 }
+
+////////////////////////////////////////////////////////////////////////////
+stimulus_const::stimulus_const(double sample_rate_hz) :
+    stimulus("Constant", sample_rate_hz)
+{
+    const_value_ = 0.0;
+    const_time_s_ = 0.0;
+}
+
+void stimulus_const::render_parameters() {
+    const double f64_one = 1.0;
+
+    ImGui::PushID(this);
+
+    if (ImGui::InputScalar("const value",    ImGuiDataType_Double, &const_value_, &f64_one)) { do_recompute_ = true; }
+    if (ImGui::InputScalar("const time (s)", ImGuiDataType_Double, &const_time_s_, &f64_one)) { do_recompute_ = true;}
+
+    ImGui::Checkbox("Zero at const off", &zero_at_off_);
+
+    ImGui::PopID();
+
+    if (do_recompute_) {
+        do_recompute_ = false;
+    }
+}
+
+void stimulus_const::step_rt() {
+    switch (state_) {
+        default:
+        case state::off_s:
+            if (zero_at_off_) {
+                value_ = 0.0;
+            }
+            break;
+
+        case state::init_s:
+            value_ = const_value_;
+            t_ = 0.0;
+            state_ = state::running_s;
+            break;
+
+        case state::running_s:
+            t_ += dt_;
+            if (t_ >= const_time_s_) {
+                state_ = state::off_s;
+            }
+            break;
+    }
+}
