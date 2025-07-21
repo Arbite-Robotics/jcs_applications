@@ -17,6 +17,7 @@ gui_device_host::gui_device_host(jcs::jcs_host* host, gui_interface* gui_if, std
     gui_plot_ = new gui_plot(host_, gui_if_, name_);
     gui_host_statistics_ = new gui_host_statistics(host_, gui_if_, name_);
     gui_host_oscilloscope_ = new gui_host_oscilloscope(host_, gui_if_, name_);
+    gui_host_input_stimulus_ = new gui_host_input_stimulus(host_, gui_if_, name_);
     gui_host_analysis_ = new gui_host_analysis(host_, gui_if_, name_);
     gui_host_network_firmware_update_ = new gui_host_network_firmware_update(host_, gui_if_, name_);
     gui_host_2d_hopper_ = new gui_host_2d_hopper(host_, gui_if_, name_);
@@ -25,6 +26,7 @@ gui_device_host::gui_device_host(jcs::jcs_host* host, gui_interface* gui_if, std
     gui_element_.push_back(static_cast<gui_type_base*>(gui_plot_));
     gui_element_.push_back(static_cast<gui_type_base*>(gui_host_statistics_));
     gui_element_.push_back(static_cast<gui_type_base*>(gui_host_oscilloscope_));
+    gui_element_.push_back(static_cast<gui_type_base*>(gui_host_input_stimulus_));
     gui_element_.push_back(static_cast<gui_type_base*>(gui_host_analysis_));
     gui_element_.push_back(static_cast<gui_type_base*>(gui_host_network_firmware_update_));
     gui_element_.push_back(static_cast<gui_type_base*>(gui_host_2d_hopper_));
@@ -33,6 +35,7 @@ gui_device_host::gui_device_host(jcs::jcs_host* host, gui_interface* gui_if, std
     gui_element_host_ptr_.push_back(static_cast<gui_device_host_base*>(gui_plot_));
     gui_element_host_ptr_.push_back(static_cast<gui_device_host_base*>(gui_host_statistics_));
     gui_element_host_ptr_.push_back(static_cast<gui_device_host_base*>(gui_host_oscilloscope_));
+    gui_element_host_ptr_.push_back(static_cast<gui_device_host_base*>(gui_host_input_stimulus_));
     gui_element_host_ptr_.push_back(static_cast<gui_device_host_base*>(gui_host_analysis_));
     gui_element_host_ptr_.push_back(static_cast<gui_device_host_base*>(gui_host_network_firmware_update_));
     gui_element_host_ptr_.push_back(static_cast<gui_device_host_base*>(gui_host_2d_hopper_));

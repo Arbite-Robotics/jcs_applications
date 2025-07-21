@@ -14,6 +14,7 @@
 #include "gui_host_statistics.h"
 #include "gui_host_logger.h"
 #include "gui_host_oscilloscope.h"
+#include "gui_host_input_stimulus.h"
 #include "gui_host_analysis.h"
 #include "gui_host_network_firmware.h"
 #include "gui_host_2d_hopper.h"
@@ -36,6 +37,7 @@ private:
     gui_plot* gui_plot_;
     gui_host_statistics* gui_host_statistics_;
     gui_host_oscilloscope* gui_host_oscilloscope_;
+    gui_host_input_stimulus* gui_host_input_stimulus_;
     gui_host_analysis* gui_host_analysis_;
     gui_host_network_firmware_update* gui_host_network_firmware_update_;
     gui_host_2d_hopper* gui_host_2d_hopper_;
