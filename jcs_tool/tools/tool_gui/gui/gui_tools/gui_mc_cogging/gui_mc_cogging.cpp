@@ -113,7 +113,6 @@ int gui_mc_cogging::render() {
     ImGui::Text("- JCS input signal motor commanded position: `th_m`");
 
     ImGui::Separator();
-    if (helpers::input_signals_check(gui_if_->get_f32_input_signal_names(), &required_input_signal_names_) == false)    { can_start_ = false; }
     if (helpers::output_signals_check(gui_if_->get_f32_output_signal_names(), &required_output_signal_names_) == false) { can_start_ = false; }
 
     ImGui::Separator();
