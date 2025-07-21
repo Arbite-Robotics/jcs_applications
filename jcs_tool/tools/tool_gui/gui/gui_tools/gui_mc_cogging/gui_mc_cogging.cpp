@@ -50,7 +50,6 @@ int gui_mc_cogging::startup() {
 
 int gui_mc_cogging::step_rt() {
 
-    host_->sig_input_set_rt(0, signals_in_);
     host_->sig_output_get_rt(0, &signals_out_);
 
     switch (state_) {
@@ -75,6 +74,7 @@ int gui_mc_cogging::step_rt() {
             }
             // Set new rotation
             signals_in_[cmd_th_m_0_idx_] = theta_command_;
+            host_->sig_input_set_rt(0, signals_in_);
             break;
 
         case behaviour::rotate_s:

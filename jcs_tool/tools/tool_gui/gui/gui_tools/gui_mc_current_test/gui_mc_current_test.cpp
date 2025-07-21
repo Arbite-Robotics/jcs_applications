@@ -50,7 +50,6 @@ int gui_mc_current_test::startup() {
 }
 
 int gui_mc_current_test::step_rt() {
-    host_->sig_input_set_rt(0, f32_input_signal_store_);
     host_->sig_output_get_rt(0, &f32_output_signal_store_);
 
     sampler_.step_rt((double)jcs::external::time_now_ns(), &f32_output_signal_store_);
@@ -66,6 +65,8 @@ int gui_mc_current_test::step_rt() {
             if (!i_ramp_.is_done()) {
                 break;
             }
+            host_->sig_input_set_rt(0, f32_input_signal_store_);
+
             i_rotate_.start_speed(0.0, rotate_speed_rads_, true, sampler_.get_sample_time_s());
             sampler_.start();
             state_ = state::rotate_s;
@@ -78,6 +79,7 @@ int gui_mc_current_test::step_rt() {
                 sampler_.stop();
                 state_ = state::finish_s;
             }
+            host_->sig_input_set_rt(0, f32_input_signal_store_);
             break;
     }
     return jcs::RET_OK;
