@@ -34,6 +34,7 @@ private:
     int fw_selected_;
     bool fw_write_active_;
     status fw_status_;
+    bool fw_only_write_listed_;
     void fw_update_render();
 
     // Bootloader
@@ -41,6 +42,7 @@ private:
     int fl_selected_;
     bool fl_write_active_;
     status fl_status_;
+    bool fl_only_write_listed_;
     void fl_update_render();
 
 };
