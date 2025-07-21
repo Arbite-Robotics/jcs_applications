@@ -23,6 +23,11 @@ void stimulus::start() {
     state_ = state::init_s;
 }
 void stimulus::stop() {
+    // Call zero at off here too.
+    // Higher level may transition not call step_rt once stop has been called....
+    if (zero_at_off_) {
+        value_ = 0.0;
+    }
     state_ = state::off_s;
 }
 bool stimulus::is_running() {
