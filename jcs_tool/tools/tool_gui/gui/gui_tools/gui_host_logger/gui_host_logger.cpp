@@ -6,7 +6,7 @@
 
 gui_host_logger::gui_host_logger(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) : 
     gui_type_base("Host logger", host, gui_if, target_device),
-    sampler_(host->base_frequency_get(), gui_if->get_f32_output_signal_names(), 10, 10, 10)
+    sampler_(host->base_frequency_get(), gui_if->get_f32_output_signal_names(), 16, host->base_frequency_get(), 10)
 {}
 
 int gui_host_logger::startup() {
