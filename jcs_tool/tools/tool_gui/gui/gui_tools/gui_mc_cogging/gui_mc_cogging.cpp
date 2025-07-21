@@ -222,6 +222,16 @@ int gui_mc_cogging::render() {
         ImGui::TableSetColumnIndex(0); ImGui::Text("th_m");
         ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", signals_in_[cmd_th_m_0_idx_]);
 
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::Text("state");
+        switch (state_) {
+            default:
+            case behaviour::standby_s:       ImGui::TableSetColumnIndex(1); ImGui::Text("standby_s"); break;
+            case behaviour::finish_s:        ImGui::TableSetColumnIndex(1); ImGui::Text("finish_s"); break;
+            case behaviour::wait_position_s: ImGui::TableSetColumnIndex(1); ImGui::Text("wait_position_s"); break;
+            case behaviour::rotate_s:        ImGui::TableSetColumnIndex(1); ImGui::Text("rotate_s"); break;
+        }
+
         ImGui::EndTable();
     }
     {
