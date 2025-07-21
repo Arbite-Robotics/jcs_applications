@@ -11,7 +11,6 @@ sampler::sampler(int const base_frequency_hz, std::vector<std::string>* output_s
     base_frequency_hz_(base_frequency_hz),
     f32_output_signal_names_(output_signal_names),
     state_(sampler_state::off_s),
-    using_filter_(true),
     sample_rate_hz_(inital_sample_rate_hz),
     storage_length_(1000),
     sample_time_s_(initial_sample_time_s)
@@ -19,6 +18,11 @@ sampler::sampler(int const base_frequency_hz, std::vector<std::string>* output_s
     // Channels NOT initialised here. We need true dt
     // however - size the vector
     channels_.resize(n_channels);
+    if (inital_sample_rate_hz == base_frequency_hz) {
+        using_filter_ = false;
+    } else {
+        using_filter_ = true;
+    }
 }
 
 sampler::~sampler() {
