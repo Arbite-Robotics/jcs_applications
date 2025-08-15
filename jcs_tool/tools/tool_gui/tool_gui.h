@@ -36,6 +36,7 @@ public:
     // Interface and helpers
     int start();
     int stop();
+    int reset();
     std::vector<std::string>* get_f32_input_signal_names();
     std::vector<std::string>* get_f32_output_signal_names();
 

@@ -390,6 +390,17 @@ int tool_gui::stop() {
     host_->process_timing_print();
     return jcs::RET_OK;
 }
+int tool_gui::reset() {
+    if (run_status_ != run_status::stopped) {
+        if (stop() != jcs::RET_OK) {
+            return jcs::RET_ERROR;
+        }
+    }
+    if (host_->reset() != jcs::RET_OK) {
+        return jcs::RET_ERROR;
+    }
+    return jcs::RET_OK;
+}
 std::vector<std::string>* tool_gui::get_f32_input_signal_names() {
     return &f32_input_signal_names_;
 }
