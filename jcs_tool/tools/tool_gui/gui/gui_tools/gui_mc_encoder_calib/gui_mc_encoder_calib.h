@@ -57,7 +57,6 @@ private:
 
     long int finish_dwell_t_start_ms_;
 
-    // sampler sampler_;
     ramp i_ramp_;
     rotate i_rotate_;
     int rotation_tick_;
