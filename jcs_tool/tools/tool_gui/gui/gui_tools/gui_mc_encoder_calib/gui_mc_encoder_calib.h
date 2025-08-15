@@ -55,8 +55,6 @@ private:
     float dwell_time_s_;
     float rotate_speed_rads_;
 
-    long int finish_dwell_t_start_ms_;
-
     ramp i_ramp_;
     rotate i_rotate_;
     int rotation_tick_;
