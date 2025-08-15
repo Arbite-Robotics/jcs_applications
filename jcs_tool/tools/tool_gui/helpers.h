@@ -11,7 +11,9 @@
 #include "jcs_host.h"
 #include <iostream>
 #include "imgui_stdlib.h"
+#include <math.h>
 
+#define M_TWO_PI (2.0 * M_PI)
 
 #define PARAM_NOTIFY(cmd, str) if (cmd != jcs::RET_OK) {     \
                                    std::cout << str << "\n"; \

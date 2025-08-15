@@ -217,8 +217,8 @@ double helpers::angle_norm_pipi(double angle) {
 // Normalise [0, 2pi]
 double helpers::angle_norm_2pi(double angle) {
     double angle_norm = angle;
-    while (angle_norm > 2.0*M_PI){ angle_norm -= 2.0*M_PI; }
-    while (angle_norm < 0.0)     { angle_norm += 2.0*M_PI; }
+    while (angle_norm >= M_TWO_PI){ angle_norm -= M_TWO_PI; }
+    while (angle_norm < 0.0)      { angle_norm += M_TWO_PI; }
     return angle_norm;
 }
 
