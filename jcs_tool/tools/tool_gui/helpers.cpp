@@ -99,6 +99,35 @@ void helpers::result_text_copyable(std::string const& text, float const& result)
     ImGui::InputText("", &res_text, ImGuiInputTextFlags_ReadOnly);
     ImGui::PopID();
 }
+void helpers::result_text_copyable(std::string const& text, int const height, std::vector<float> const& result, int const wrap_after_elements) {
+   std::string res_text = text + "[ ";
+   // Build an indent string
+   std::string indent(res_text.length(), ' ');
+
+   for (int i = 0; i < result.size(); ++i) {
+       if (i > 0) {
+           res_text += ", ";
+           // Add newline and indent after every wrap_after_elements
+           if (i % wrap_after_elements == 0) {
+               res_text += "\n" + indent;
+           }
+       }
+       // res_text += std::to_string(result[i]);
+        char buffer[32];
+        // 10 chars wide, 8 decimal places
+        snprintf(buffer, sizeof(buffer), "%10.8f", result[i]);
+        // Add a space to line up if not negative
+        if (result[i] >= 0.0f) {
+            res_text += " ";
+        }
+        res_text += buffer;
+   }
+   res_text += " ]";
+
+   ImGui::PushID(res_text.c_str());
+   ImGui::InputTextMultiline("", &res_text, ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * height), ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AutoSelectAll);
+   ImGui::PopID();
+}
 
 int helpers::build_output_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_output_signal_names) {
     // Build a list of all available output float type, base rate signals
