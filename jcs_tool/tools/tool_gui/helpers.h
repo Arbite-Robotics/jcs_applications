@@ -17,6 +17,11 @@
                                    std::cout << str << "\n"; \
                                }
 
+#define PARAM_NOTIFY_ACTION(cmd, str, action)   if (cmd != jcs::RET_OK) {     \
+                                                    std::cout << str << "\n"; \
+                                                    action                    \
+                                                }
+
 #define PARAM_NOTIFY_OK(cmd, str) if (cmd != jcs::RET_OK) {     \
                                     std::cout << str << "\n"; \
                                     return jcs::RET_OK;       \
