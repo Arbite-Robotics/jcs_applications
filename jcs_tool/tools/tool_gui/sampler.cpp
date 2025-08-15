@@ -397,8 +397,8 @@ int sampler::emit_data(std::string const& path_and_file) {
     for (int i=0; i<channels_[0]->buffer_.data_.size(); i++) {
         ImVec2 point = channels_[0]->buffer_[i];
 
-        // Time is 3 sig fig
-        config_file << std::fixed << std::setprecision(3) << point.x << ",";
+        // Time is 6 sig fig
+        config_file << std::fixed << std::setprecision(6) << point.x << ",";
 
         // Channel data is default
         config_file.precision(default_precision);
