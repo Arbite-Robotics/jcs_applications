@@ -35,6 +35,7 @@ JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_host_analysis/gui_hos
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_host_network_firmware/gui_host_network_firmware.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/helpers/stimulus.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/helpers/gui_stimulus.o
+JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/helpers/plot_measurement_multi.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_oscilloscope/gui_oscilloscope.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_parameter/gui_parameter.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_parameter/gui_parameter_types.o
@@ -45,6 +46,8 @@ JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_mc_tune/gui_mc_tune.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_mc_cogging/gui_mc_cogging.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_mc_encoder/gui_mc_encoder.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_mc_current_test/gui_mc_current_test.o
+JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_mc_encoder_calib/gui_mc_encoder_calib.o
+JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_mc_encoder_calib/mc_encoder_corrector.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_bc_tune/gui_bc_tune.o
 
 # Hoppy robot
@@ -112,6 +115,7 @@ JCS_TOOL_GUI_INC += -I$(TARGET_PATH)tools/tool_gui/gui/gui_tools/gui_mc_tune/
 JCS_TOOL_GUI_INC += -I$(TARGET_PATH)tools/tool_gui/gui/gui_tools/gui_mc_cogging/
 JCS_TOOL_GUI_INC += -I$(TARGET_PATH)tools/tool_gui/gui/gui_tools/gui_mc_encoder/
 JCS_TOOL_GUI_INC += -I$(TARGET_PATH)tools/tool_gui/gui/gui_tools/gui_mc_current_test/
+JCS_TOOL_GUI_INC += -I$(TARGET_PATH)tools/tool_gui/gui/gui_tools/gui_mc_encoder_calib/
 JCS_TOOL_GUI_INC += -I$(TARGET_PATH)tools/tool_gui/gui/gui_tools/gui_bc_tune/
 
 JCS_TOOL_GUI_INC += -I$(TARGET_PATH)tools/tool_gui/gui/gui_fun/2d_hopper/
