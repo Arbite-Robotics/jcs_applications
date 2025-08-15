@@ -89,7 +89,6 @@ private:
 
     // Calibrator
     mc_encoder_corrector::correction_table correction_table_;
-    std::vector<float> accumulated_corrections_;
 
     // Original settings storage
     bool conf_enc_theta_bypass_;
