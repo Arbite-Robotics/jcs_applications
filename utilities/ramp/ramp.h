@@ -26,14 +26,15 @@ private:
     };
 
     state state_;
+    double ramp_start_;
+    double ramp_final_;
     double ramp_value_;
     double ramp_time_;
-    double ramp_final_;
-    double ramp_increment_;
+    double ramp_elapsed_;
     double dwell_time_;
-    double dwell_tick_;
+    double dwell_elapsed_;
     double settle_time_;
-    double settle_tick_;
+    double settle_elapsed_;
     double dt_;
 };
 
