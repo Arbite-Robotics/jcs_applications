@@ -47,6 +47,12 @@ private:
     int ready_test();
     void get_test_parameters();
 
+    enum class vi_mode {
+        current_s,
+        voltage_s
+    };
+    vi_mode vi_mode_;
+
     bool is_ready_;
     bool can_start_;
 
@@ -59,16 +65,14 @@ private:
     rotate i_rotate_;
     int rotation_tick_;
 
-    std::vector<std::string> required_output_signal_names_;
-
     std::vector<float> f32_input_signal_store_;
     std::vector<float> f32_output_signal_store_;
 
-    helpers::combo_source signal_in_source_i_d_;
+    helpers::combo_source signal_in_source_d_;
     helpers::combo_source signal_in_source_th_m_;
 
     int signal_out_th_m_0_idx_;
-    int signal_out_i_d_idx_;
+    int signal_out_d_idx_;
 
     // Plotters and storage
     plot_measurement_multi th_m_orig_;

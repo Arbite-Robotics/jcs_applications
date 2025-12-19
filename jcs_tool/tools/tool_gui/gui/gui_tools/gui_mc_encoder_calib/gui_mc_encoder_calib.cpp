@@ -15,16 +15,17 @@ gui_mc_encoder_calib::gui_mc_encoder_calib(jcs::jcs_host* host, gui_interface* g
     active_encoder_("encoder_0", 0),
     configured_encoder_("encoder_0"), configured_estimator_("estimator_0"),
     state_(state::off_s),
+    vi_mode_(vi_mode::current_s),
     th_m_orig_("Theta reference and recorded", "Time (s)", "Theta (rad)", test_time_s_, host->base_frequency_get()),
     th_m_error_("Theta error", "Time (s)", "Theta (rad)", test_time_s_, host->base_frequency_get()),
     th_m_corrected_("Theta corrected", "Time (s)", "Theta (rad)", test_time_s_, host->base_frequency_get()),
     i_ramp_(1.0 / static_cast<double>(host_->base_frequency_get())),
     i_rotate_(1.0 / static_cast<double>(host_->base_frequency_get())),
     is_ready_(false),
-    signal_in_source_i_d_("None", 0),
+    signal_in_source_d_("None", 0),
     signal_in_source_th_m_("None", 0),
     signal_out_th_m_0_idx_(0), 
-    signal_out_i_d_idx_(0)
+    signal_out_d_idx_(0)
 {
     test_current_ = 1.0f;
     ramp_time_s_ = 1.0f;
@@ -66,10 +67,6 @@ int gui_mc_encoder_calib::startup() {
 
     // Signal index helpers
     can_start_ = true;
-    if (helpers::signals_names_contains(gui_if_->get_f32_output_signal_names(), target_device_+"::th_m_0", &signal_out_th_m_0_idx_) != jcs::RET_OK) { can_start_ = false; }
-    if (helpers::signals_names_contains(gui_if_->get_f32_output_signal_names(), target_device_+"::i_d",    &signal_out_i_d_idx_) != jcs::RET_OK)    { can_start_ = false; }
-
-    required_output_signal_names_ = { target_device_+"::th_m_0", target_device_+"::i_d" };
 
     rotation_tick_ = 0;
     return jcs::RET_OK;
@@ -89,7 +86,7 @@ int gui_mc_encoder_calib::step_rt() {
 
         case state::ramp_to_current_s:
             // Ramp up nicely
-            f32_input_signal_store_[ signal_in_source_i_d_.index_ ] = i_ramp_.step();
+            f32_input_signal_store_[ signal_in_source_d_.index_ ] = i_ramp_.step();
             if (!i_ramp_.is_done()) {
                 break;
             }
@@ -124,7 +121,7 @@ int gui_mc_encoder_calib::step_rt() {
 
         case state::finish_ramp_s:
             // Ramp fown nicely to stop the rotor from jumping when setting D=0
-            f32_input_signal_store_[ signal_in_source_i_d_.index_ ] = i_ramp_.step();
+            f32_input_signal_store_[ signal_in_source_d_.index_ ] = i_ramp_.step();
             host_->sig_input_set_rt(0, f32_input_signal_store_);
             if (i_ramp_.is_done()) {
                 state_ = state::finish_s;
@@ -163,17 +160,26 @@ int gui_mc_encoder_calib::render() {
             std::fill(th_m_corrected_corrected_->y_.begin(), th_m_corrected_corrected_->y_.end(), 0.0f);
             std::fill(th_m_error_corrected_->y_.begin(), th_m_error_corrected_->y_.end(), 0.0f);
 
-            f32_input_signal_store_[ signal_in_source_i_d_.index_ ] = 0.0f;
+            f32_input_signal_store_[ signal_in_source_d_.index_ ] = 0.0f;
             f32_input_signal_store_[ signal_in_source_th_m_.index_ ] = 0.0f;
             i_ramp_.start(0.0, test_current_, ramp_time_s_, 0.5, dwell_time_s_);
             rotation_tick_ = 0;
+
             // Start JCS host
             if (gui_if_->start() != jcs::RET_OK) {
                 state_ = state::finish_s;
                 break;
             }
-            // Start the current controller
-            PARAM_NOTIFY_ACTION( host_->write_enum(target_device_,    "controller_mode", "current_dq"), "Parameter failed: controller_mode", state_ = state::finish_s; break; )
+            helpers::sleep_ms(500);
+            // Start the controller
+            {
+                std::string controller_mode = "current_dq";
+                switch (vi_mode_) {
+                    case vi_mode::current_s: controller_mode = "current_dq"; break;
+                    case vi_mode::voltage_s: controller_mode = "voltage_dq"; break;
+                }
+                PARAM_NOTIFY_ACTION( host_->write_enum(target_device_, "controller_mode", controller_mode), "Parameter failed: controller_mode", state_ = state::finish_s; break; )
+            }
             PARAM_NOTIFY_ACTION( host_->write_command(target_device_, "controller_start"), "Parameter failed: controller_start", state_ = state::finish_s; break; )
 
             state_ = state::ramp_to_current_s;
@@ -187,7 +193,7 @@ int gui_mc_encoder_calib::render() {
             PARAM_NOTIFY( host_->write_bool(target_device_, configured_encoder_+"_theta_bypass",           conf_enc_theta_bypass_),          "Parameter failed: "+configured_encoder_+"_theta_bypass" )
             PARAM_NOTIFY( host_->write_bool(target_device_, configured_encoder_+"_theta_bypass_direction", conf_enc_theta_bypass_direction_),"Parameter failed: "+configured_encoder_+"_theta_bypass_direction" )
             PARAM_NOTIFY( host_->write_bool(target_device_, configured_estimator_+"_theta_passthrough",    conf_est_theta_passthrough_),     "Parameter failed: "+configured_estimator_+"_theta_passthrough" )
-            f32_input_signal_store_[ signal_in_source_i_d_.index_ ] = 0.0f;
+            f32_input_signal_store_[ signal_in_source_d_.index_ ] = 0.0f;
             gui_if_->stop();
             gui_if_->reset();
             state_ = state::off_s;
@@ -207,14 +213,33 @@ int gui_mc_encoder_calib::render() {
     ImGui::Text("- Ensure motor can spin freely.");
     ImGui::Text(" ");
     ImGui::Text("You should configure:");
+    ImGui::Text("- Current or voltage mode (prefer current mode).");
     ImGui::Text("- Active encoder.");
-    ImGui::Text("- Test current - Should be high enough to solidly lock the rotor.");
-    ImGui::Text("- D-axis input signal (eg: i_d).");
+    ImGui::Text("- Test current or voltage. Should be high enough to solidly lock the rotor.");
+    ImGui::Text("- D-axis input signal (eg: i_d or v_d).");
     ImGui::Text("- Theta input signal (eg: th_m).");
     ImGui::Text(" ");
 
     ImGui::Separator();
-    helpers::output_signals_check(gui_if_->get_f32_output_signal_names(), &required_output_signal_names_);
+    if (ImGui::RadioButton("Current Mode", vi_mode_ == vi_mode::current_s)) {
+        vi_mode_ = vi_mode::current_s;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Voltage Mode", vi_mode_ == vi_mode::voltage_s)) {
+        vi_mode_ = vi_mode::voltage_s;
+    }
+    // Check for required signals
+    {
+        static std::string sig_mode = "::i_d";
+        switch (vi_mode_) {
+            case vi_mode::current_s: sig_mode = "::i_d"; break;
+            case vi_mode::voltage_s: sig_mode = "::v_d"; break;
+        }
+        if (helpers::signals_names_contains(gui_if_->get_f32_output_signal_names(), target_device_+sig_mode,   &signal_out_d_idx_) != jcs::RET_OK)      { can_start_ = false; }
+        if (helpers::signals_names_contains(gui_if_->get_f32_output_signal_names(), target_device_+"::th_m_0", &signal_out_th_m_0_idx_) != jcs::RET_OK) { can_start_ = false; }
+        std::vector<std::string> required_output_signal_names = { target_device_+"::th_m_0", target_device_+sig_mode };
+        helpers::output_signals_check(gui_if_->get_f32_output_signal_names(), &required_output_signal_names);
+    }
 
     ImGui::Separator();
     if (ImGui::Button("Click to make motor controller ready for tests!")) {
@@ -276,9 +301,13 @@ int gui_mc_encoder_calib::render() {
         ImGui::TableSetColumnIndex(2); ImGui::Text("%.6f", f32_output_signal_store_[signal_out_th_m_0_idx_]);
 
         ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0); ImGui::Text("i_d");
-        ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", f32_input_signal_store_[ signal_in_source_i_d_.index_ ]);
-        ImGui::TableSetColumnIndex(2); ImGui::Text("%.6f", f32_output_signal_store_[signal_out_i_d_idx_]);
+        ImGui::TableSetColumnIndex(0);
+        switch (vi_mode_) {
+            case vi_mode::current_s: ImGui::Text("i_d"); break;
+            case vi_mode::voltage_s: ImGui::Text("v_d"); break;
+        }
+        ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", f32_input_signal_store_[ signal_in_source_d_.index_ ]);
+        ImGui::TableSetColumnIndex(2); ImGui::Text("%.6f", f32_output_signal_store_[signal_out_d_idx_]);
 
         ImGui::EndTable();
     }
@@ -378,11 +407,25 @@ void gui_mc_encoder_calib::get_test_parameters() {
         case 0: configured_encoder_ = "encoder_0"; configured_estimator_ = "estimator_0"; break;
         case 1: configured_encoder_ = "encoder_1"; configured_estimator_ = "estimator_0"; break;
     }
+
+    std::string vi_axis_text = "i_d";
+    std::string vi_test_text = "Test current (A)";
+    switch (vi_mode_) {
+        case vi_mode::current_s:
+            vi_axis_text = "i_d";
+            vi_test_text = "Test current (A)";
+            break;
+        case vi_mode::voltage_s:
+            vi_axis_text = "v_d";
+            vi_test_text = "Test voltage (V)";
+            break;
+    }
+
     ImGui::Separator();
     // Get test parameters
     {
         float value = test_current_;
-        if (ImGui::InputFloat("Test current (A)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputFloat(vi_test_text.c_str(), &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
             test_current_ = value;
         }
     }
@@ -405,6 +448,6 @@ void gui_mc_encoder_calib::get_test_parameters() {
         }
     }
     // Input signal selection
-    helpers::combo_select("i_d command", gui_if_->get_f32_input_signal_names(), &signal_in_source_i_d_);
-    helpers::combo_select("th_m command",    gui_if_->get_f32_input_signal_names(), &signal_in_source_th_m_);
+    helpers::combo_select(vi_axis_text + " command", gui_if_->get_f32_input_signal_names(), &signal_in_source_d_);
+    helpers::combo_select("th_m command", gui_if_->get_f32_input_signal_names(), &signal_in_source_th_m_);
 }
