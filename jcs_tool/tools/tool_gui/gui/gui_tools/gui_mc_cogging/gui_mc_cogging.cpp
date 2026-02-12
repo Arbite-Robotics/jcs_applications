@@ -278,7 +278,7 @@ int gui_mc_cogging::render() {
     }
 
     ImGui::Separator();
-    if (ImGui::Button("Write coefficienct to device")) {
+    if (ImGui::Button("Write coefficients to device")) {
         host_->write_float(target_device_, "cogging_compensator_coeffs", plot_final_.y_);
         host_->write_float(target_device_, "cogging_compensator_upper_w_m_low", cogging_compensator_upper_w_m_low_);
         host_->write_float(target_device_, "cogging_compensator_upper_w_m_high", cogging_compensator_upper_w_m_high_);
