@@ -43,8 +43,6 @@ void plot_sink_plot::update() {
     if (ImGui::Button("Min/max reset")) {
         min_ = 0.0f;
         max_ = 0.0f;
-        // do_reset_y_axis_ = true;
-        // ImPlot::SetNextAxesToFit();
     }
     ImGui::SameLine();
     // ImGui::SliderFloat("History", &history_, 1, 30, "%.1f s");
@@ -57,18 +55,12 @@ void plot_sink_plot::update() {
     ImGui::DragFloat("Average time", &ave_time_, 1.0f, 1.0f, 10.0f, "%.1fs");
     ImGui::PopItemWidth();
 
-
     ImGui::PopItemWidth();
 
-    if (value < min_) {
-        min_ = value;
-    }
-    if (value > max_) {
-        max_ = value;
-    }
+    if (value < min_) { min_ = value; }
+    if (value > max_) { max_ = value; }
 
     t_ += ImGui::GetIO().DeltaTime;
-
     buffer_.add_point(t_, value);
 
     // Find time range to compute average over, then compute average
@@ -86,11 +78,8 @@ void plot_sink_plot::update() {
         average_ = (float)(ave / (double)average_count_);
     }
 
-    static ImPlotAxisFlags flags = ImPlotAxisFlags_NoTickLabels | ImPlotFlags_NoFrame | ImPlotAxisFlags_AutoFit | 
+    static ImPlotAxisFlags flags = ImPlotAxisFlags_NoTickLabels | ImPlotFlags_NoFrame | 
                                    ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoGridLines;
-
-    // static ImPlotAxisFlags flags = ImPlotAxisFlags_NoTickLabels | ImPlotFlags_NoFrame | ImPlotAxisFlags_RangeFit | ImPlotAxisFlags_AutoFit |
-    //                                ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoGridLines;
 
     // remove padding between plot and frame
     ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, ImVec2(0,0));
@@ -98,11 +87,12 @@ void plot_sink_plot::update() {
         ImPlot::SetupLegend(ImPlotLocation_East, ImPlotLegendFlags_Outside);
         ImPlot::SetupAxes(nullptr, nullptr, flags, flags);
         ImPlot::SetupAxisLimits(ImAxis_X1, t_ - history_, t_, ImGuiCond_Always);
-        ImPlot::SetupAxisLimits(ImAxis_Y1, -10.0, 10.0);
-        // if (do_reset_y_axis_) {
-        //     do_reset_y_axis_ = false;
-        //     // ImPlot::SetNextAxisToFit(ImAxis_Y1);
-        // }
+
+        // Drive Y axis limits to max / min with a bit o padding
+        float padding = (max_ - min_) * 0.1f;
+        if (padding < 0.00f) { padding = 1.0f; }
+        ImPlot::SetupAxisLimits(ImAxis_Y1, min_ - padding, max_ + padding, ImGuiCond_Always);
+
         ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
         ImPlot::PlotLine("##", &buffer_.data_[0].x, &buffer_.data_[0].y, buffer_.data_.size(), 0, buffer_.offset_, 2*sizeof(float));
         ImPlot::EndPlot();
