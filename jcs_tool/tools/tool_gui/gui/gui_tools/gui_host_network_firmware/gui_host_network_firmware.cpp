@@ -83,7 +83,11 @@ void gui_host_network_firmware_update::fw_update_render() {
         // action if OK
         if (ImGuiFileDialog::Instance()->IsOk()) {
             fw_status_ = status::standby_s;
-            fw_names_.push_back(ImGuiFileDialog::Instance()->GetFilePathName());
+            // Only add if not already in the list
+            std::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
+            if (std::find(fw_names_.begin(), fw_names_.end(), filepath) == fw_names_.end()) {
+                fw_names_.push_back(filepath);
+            }
         }
     }
     ImGui::PopID();
@@ -178,7 +182,11 @@ void gui_host_network_firmware_update::fl_update_render() {
         // action if OK
         if (ImGuiFileDialog::Instance()->IsOk()) {
             fl_status_ = status::standby_s;
-            fl_names_.push_back(ImGuiFileDialog::Instance()->GetFilePathName());
+            // Only add if not already in the list
+            std::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
+            if (std::find(fl_names_.begin(), fl_names_.end(), filepath) == fl_names_.end()) {
+                fl_names_.push_back(filepath);
+            }
         }
     }
     ImGui::PopID();
