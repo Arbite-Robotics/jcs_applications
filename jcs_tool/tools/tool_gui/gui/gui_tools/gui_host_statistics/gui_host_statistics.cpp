@@ -15,6 +15,8 @@
 gui_host_statistics::gui_host_statistics(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) :
     gui_type_base("Statistics", host, gui_if, target_device),
     to_mean_buffer_(2000),
+    thread_timestamp_buffer_(2000),
+    start_cycle_time_old_ns_(0),
     cycle_buffer_(2000),
     data_exchange_buffer_(2000),
     max_history_s_(30),
@@ -27,6 +29,7 @@ int gui_host_statistics::startup() {
     cycle_buffer_.update_size(new_buffer_size);
     data_exchange_buffer_.update_size(new_buffer_size);
     to_mean_buffer_.update_size(new_buffer_size);
+    thread_timestamp_buffer_.update_size(new_buffer_size);
 
     t_start_ns_ = (double)jcs::external::time_now_ns();
     return jcs::RET_OK;
@@ -46,6 +49,9 @@ int gui_host_statistics::step_rt_always() {
     // Note: Not caring about locking or anything here. Just go for gold
     cycle_buffer_.add_point(t_s_, (float)timing_.total_cycle_time_ns/1000.0f);
     data_exchange_buffer_.add_point(t_s_, (float)timing_.data_exchange_time_ns/1000.0f);
+    // Thread wakup delta
+    thread_timestamp_buffer_.add_point(t_s_, (float)(timing_.start_cycle_time_ns - start_cycle_time_old_ns_)/1000.0f);
+    start_cycle_time_old_ns_ = timing_.start_cycle_time_ns;
 
     to_mean_buffer_.add_point(t_s_, (float)health_.thread_offset.mean);
     return jcs::RET_OK;
@@ -185,15 +191,15 @@ int gui_host_statistics::render() {
 
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
-        ImGui::Text("Variance (ns)");
+        ImGui::Text("Variance (ns^2)");
         ImGui::TableSetColumnIndex(1);
         ImGui::Text("%7.3f", (float)health_.thread_offset.variance);
 
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);        
-        ImGui::Text("Variance %% of mean");
+        ImGui::Text("Std Deviation (ns)");
         ImGui::TableSetColumnIndex(1);
-        ImGui::Text("%3.6f", ((float)health_.thread_offset.variance/(float)health_.thread_offset.mean)*100.0f);
+        ImGui::Text("%7.3f", (float)health_.thread_offset.std_dev);
         ImGui::EndTable();
     }
 
@@ -201,11 +207,24 @@ int gui_host_statistics::render() {
     if (ImPlot::BeginPlot("Thread offset plot")) {
         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
 
-        ImPlot::SetupAxes("t", nullptr, x_flags, y_flags);
+        ImPlot::SetupAxes("t (ns)", nullptr, x_flags, y_flags);
         ImPlot::SetupAxisLimits(ImAxis_X1, t_s_ - max_history_s_, t_s_, ImGuiCond_Once);
         ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
 
         to_mean_buffer_.plot_line("Mean");
+
+        ImPlot::PopStyleVar();
+        ImPlot::EndPlot();
+    }
+
+    if (ImPlot::BeginPlot("Thread wakeup delta plot")) {
+        ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
+
+        ImPlot::SetupAxes("t (us)", nullptr, x_flags, y_flags);
+        ImPlot::SetupAxisLimits(ImAxis_X1, t_s_ - max_history_s_, t_s_, ImGuiCond_Once);
+        ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
+
+        thread_timestamp_buffer_.plot_line("delta");
 
         ImPlot::PopStyleVar();
         ImPlot::EndPlot();
