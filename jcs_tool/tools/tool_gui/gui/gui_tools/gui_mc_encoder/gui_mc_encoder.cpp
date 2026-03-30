@@ -16,7 +16,8 @@ gui_mc_encoder::gui_mc_encoder(jcs::jcs_host* host, gui_interface* gui_if, std::
 {
     is_ready_ = false;
     i_d_alignment_ = 1.0f;
-    i_d_alignment_ramp_time_ms_ = 2000.0f;
+    i_d_alignment_ramp_time_ms_ = 2000;
+    i_d_alignment_settle_time_ms_ = 2000;
     encoder_position_offset_ = 0.0f;
 }
 
@@ -67,11 +68,16 @@ int gui_mc_encoder::render_zero_encoder() {
     ImGui::Separator();
     ImGui::Text("Zero encoder");
     ImGui::Separator();
-    ImGui::Text("This tool will ramp the D-Axis current, then record the encoder offset.");
+    ImGui::Text("This tool will:");
+    ImGui::Text(" - Ramp the D-Axis current for the ramp up time.");
+    ImGui::Text(" - Allow the rotor to settle for the settle time.");
+    ImGui::Text(" - Record the encoder offset.");
+    ImGui::NewLine();
     ImGui::Text("Notes:");
     ImGui::Text("- Ensure a large enough D-Axis current to overcome any friction or cogging torque effects.");
     ImGui::Text("- Ensure device is not temperature clamped.");
     ImGui::Text("- Ensure anti-cogging feature is disabled.");
+    ImGui::Text("- Ensure settling time is sufficient to allow the rotor to come to a complete standstill.");
     ImGui::NewLine();
 
     ImGui::Separator();
@@ -86,9 +92,15 @@ int gui_mc_encoder::render_zero_encoder() {
         }
     }
     {
-        float value = i_d_alignment_ramp_time_ms_;
-        if (ImGui::InputFloat("D-Axis alignment ramp up time (ms)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
-            i_d_alignment_ramp_time_ms_ = value;
+        int value = (int)i_d_alignment_ramp_time_ms_;
+        if (ImGui::InputInt("D-Axis alignment ramp up time (ms)", &value, 1, 10, ImGuiInputTextFlags_EscapeClearsAll)) {
+            i_d_alignment_ramp_time_ms_ = (uint16_t)value;
+        }
+    }
+    {
+        int value = (int)i_d_alignment_settle_time_ms_;
+        if (ImGui::InputInt("D-Axis alignment settle time (ms)", &value, 1, 10, ImGuiInputTextFlags_EscapeClearsAll)) {
+            i_d_alignment_settle_time_ms_ = (uint16_t)value;
         }
     }
     if (ImGui::Button("Start zero")) {
@@ -104,8 +116,8 @@ int gui_mc_encoder::render_zero_encoder() {
         }
 
         PARAM_NOTIFY_ERROR( host_->write_float(target_device_,  "i_d_alignment", i_d_alignment_), "Parameter failed: i_d_alignment" )
-        PARAM_NOTIFY_ERROR( host_->write_float(target_device_,  "i_d_alignment_ramp_time_ms", i_d_alignment_ramp_time_ms_), "Parameter failed: i_d_alignment_ramp_time_ms" )
-
+        PARAM_NOTIFY_ERROR( host_->write_uint16(target_device_, "i_d_alignment_ramp_time_ms",   i_d_alignment_ramp_time_ms_),   "Parameter failed: i_d_alignment_ramp_time_ms" )
+        PARAM_NOTIFY_ERROR( host_->write_uint16(target_device_, "i_d_alignment_settle_time_ms", i_d_alignment_settle_time_ms_), "Parameter failed: i_d_alignment_settle_time_ms" )
         // Configure controller mode into align mode
         PARAM_NOTIFY_ERROR( host_->write_enum(target_device_,   "controller_mode", "test_align"), "Parameter failed: controller_mode" )
         // Starting the controller starts the test

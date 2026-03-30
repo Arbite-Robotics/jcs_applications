@@ -25,7 +25,8 @@ public:
 private:
     bool is_ready_;
     float i_d_alignment_;
-    float i_d_alignment_ramp_time_ms_;
+    uint16_t i_d_alignment_ramp_time_ms_;
+    uint16_t i_d_alignment_settle_time_ms_;
     float encoder_position_offset_;
 
 
