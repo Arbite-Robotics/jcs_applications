@@ -4,8 +4,8 @@
 #include "gui_mc_tune.h"
 #include <iostream>
 #include "helpers.h"
+#include "imgui_helpers.h"
 #include <cmath>
-
 #include "jcs_dev_motor_controller.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -371,125 +371,111 @@ int gui_mc_tune::render() {
             return jcs::RET_OK;
         }
     }
+    {
+        ImGuiDisabled ui_disabled(!is_ready_);
 
-    if (!is_ready_) {
-        ImGui::BeginDisabled();
-    }
+        auto clean_up_on_error = [&]() {
+            is_ready_ = false;
+        };
 
-    auto clean_up_on_error = [&]() {
-        if (!is_ready_) {
-            ImGui::EndDisabled();
-        }
-        is_ready_ = false;
-    };
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        // Resistance and Ldq parameters
+        test_r_.render_ui();
+        test_l_[0].render_ui();
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    // Resistance and Ldq parameters
-    test_r_.render_ui();
-    test_l_[0].render_ui();
+        ImGui::Separator();
+        ImGui::Text("For surface-mount magnet motors Ld=Lq (most outrunner and gimbal motors). Set to skip Q-axis test.");
+        ImGui::Text("For interior magnet motors Lq>Ld. Disable to perform Q-axis test.");
+        ImGui::Checkbox("Lq = Ld", &lq_equals_ld_);
 
-    ImGui::Separator();
-    ImGui::Text("For surface-mount magnet motors Ld=Lq (most outrunner and gimbal motors). Set to skip Q-axis test.");
-    ImGui::Text("For interior magnet motors Lq>Ld. Disable to perform Q-axis test.");
-    ImGui::Checkbox("Lq = Ld", &lq_equals_ld_);
-
-    if (lq_equals_ld_) {
-        test_l_[1].copy_result_from(test_l_[0]);
-        ImGui::BeginDisabled();
-        test_l_[1].render_ui();
-        ImGui::EndDisabled();
-    } else {
-        test_l_[1].render_ui();
-    }
-
-    if (ImGui::Button("Measure phase resistance and inductance")) {
-        // Temperature clamp check
-        {
-            bool ctrl_is_temperature_clamped = false;
-            PARAM_NOTIFY_CLEANUP_OK( host_->read_bool(target_device_, "temperature_penalty_ctrl_is_clamped", &ctrl_is_temperature_clamped), "Parameter failed: temperature_penalty_ctrl_is_clamped", clean_up_on_error(); )
-
-            if (ctrl_is_temperature_clamped) {
-                std::cout << "ERROR: Device control is temperature clamped. Cannot continue with test.\n";
-                clean_up_on_error();
-                return jcs::RET_OK;
-            }
-        }
-        // Disable measurement filter for higher frequency tests
-        std::string i_dq_measurement_filter = "";
-        {
-            PARAM_NOTIFY_CLEANUP_OK( host_->read_enum(target_device_, "i_dq_measurement_filter", &i_dq_measurement_filter), "Parameter failed: i_dq_measurement_filter", clean_up_on_error(); )
-            PARAM_NOTIFY_CLEANUP_OK( host_->write_enum(target_device_, "i_dq_measurement_filter", "dq_filter_none"), "Parameter failed: i_dq_measurement_filter", clean_up_on_error(); )
-        }
-
-        // Run resistance test
-        CHECK_CLEANUP_OK( test_r_.execute(host_, target_device_), clean_up_on_error(); )
-
-        // Run Ld test
-        CHECK_CLEANUP_OK( test_l_[0].execute(host_, target_device_), clean_up_on_error(); )
-
-        // Run Lq test (or copy from Ld)
         if (lq_equals_ld_) {
             test_l_[1].copy_result_from(test_l_[0]);
-            // Write Lq out
-            PARAM_NOTIFY_CLEANUP_OK( host_->write_float(target_device_, "motor_Lq", test_l_[1].result), "Parameter failed: motor_Lq", clean_up_on_error(); )
+            ImGuiDisabled ui_q(true);
+            test_l_[1].render_ui();
         } else {
-            CHECK_CLEANUP_OK( test_l_[1].execute(host_, target_device_), clean_up_on_error(); )
+            test_l_[1].render_ui();
         }
 
-        // Restore original dq filter
-        PARAM_NOTIFY_CLEANUP_OK( host_->write_enum(target_device_, "i_dq_measurement_filter", i_dq_measurement_filter), "Parameter failed: i_dq_measurement_filter", clean_up_on_error(); )
-    }
+        if (ImGui::Button("Measure phase resistance and inductance")) {
+            // Temperature clamp check
+            {
+                bool ctrl_is_temperature_clamped = false;
+                PARAM_NOTIFY_CLEANUP_OK( host_->read_bool(target_device_, "temperature_penalty_ctrl_is_clamped", &ctrl_is_temperature_clamped), "Parameter failed: temperature_penalty_ctrl_is_clamped", clean_up_on_error(); )
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    // Current controller bandwidth
-    ImGui::NewLine();
-    ImGui::Separator();
-    ImGui::Text("Configure current controller bandwidth");
-    ImGui::Text("(Depends on good phase resistance and inductance values)");
-    {
-        float value = i_ctl_bw_hz_;
-        if (ImGui::InputFloat("Current controller bandwidth (Hz)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
-            i_ctl_bw_hz_ = value;
+                if (ctrl_is_temperature_clamped) {
+                    std::cout << "ERROR: Device control is temperature clamped. Cannot continue with test.\n";
+                    clean_up_on_error();
+                    return jcs::RET_OK;
+                }
+            }
+            // Disable measurement filter for higher frequency tests
+            std::string i_dq_measurement_filter = "";
+            {
+                PARAM_NOTIFY_CLEANUP_OK( host_->read_enum(target_device_, "i_dq_measurement_filter", &i_dq_measurement_filter), "Parameter failed: i_dq_measurement_filter", clean_up_on_error(); )
+                PARAM_NOTIFY_CLEANUP_OK( host_->write_enum(target_device_, "i_dq_measurement_filter", "dq_filter_none"), "Parameter failed: i_dq_measurement_filter", clean_up_on_error(); )
+            }
+            // Run resistance test
+            CHECK_CLEANUP_OK( test_r_.execute(host_, target_device_), clean_up_on_error(); )
+            // Run Ld test
+            CHECK_CLEANUP_OK( test_l_[0].execute(host_, target_device_), clean_up_on_error(); )
+            // Run Lq test (or copy from Ld)
+            if (lq_equals_ld_) {
+                test_l_[1].copy_result_from(test_l_[0]);
+                // Write Lq out
+                PARAM_NOTIFY_CLEANUP_OK( host_->write_float(target_device_, "motor_Lq", test_l_[1].result), "Parameter failed: motor_Lq", clean_up_on_error(); )
+            } else {
+                CHECK_CLEANUP_OK( test_l_[1].execute(host_, target_device_), clean_up_on_error(); )
+            }
+            // Restore original dq filter
+            PARAM_NOTIFY_CLEANUP_OK( host_->write_enum(target_device_, "i_dq_measurement_filter", i_dq_measurement_filter), "Parameter failed: i_dq_measurement_filter", clean_up_on_error(); )
         }
-    }
-    i_ctl_bw_rads_ = i_ctl_bw_hz_ * 2.0f * (float)M_PI;
-    ImGui::Text("Current controller bandwidth %.3f (Rad/s)", i_ctl_bw_rads_);
 
-    controller_gains_[0] = compute_controller_gains(i_ctl_bw_rads_, test_r_.result, test_l_[0].result);
-    controller_gains_[1] = compute_controller_gains(i_ctl_bw_rads_, test_r_.result, test_l_[1].result);
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        // Current controller bandwidth
+        ImGui::NewLine();
+        ImGui::Separator();
+        ImGui::Text("Configure current controller bandwidth");
+        ImGui::Text("(Depends on good phase resistance and inductance values)");
+        {
+            float value = i_ctl_bw_hz_;
+            if (ImGui::InputFloat("Current controller bandwidth (Hz)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
+                i_ctl_bw_hz_ = value;
+            }
+        }
+        i_ctl_bw_rads_ = i_ctl_bw_hz_ * 2.0f * (float)M_PI;
+        ImGui::Text("Current controller bandwidth %.3f (Rad/s)", i_ctl_bw_rads_);
 
-    render_controller_gains("d", controller_gains_[0]);
-    render_controller_gains("q", controller_gains_[1]);
+        controller_gains_[0] = compute_controller_gains(i_ctl_bw_rads_, test_r_.result, test_l_[0].result);
+        controller_gains_[1] = compute_controller_gains(i_ctl_bw_rads_, test_r_.result, test_l_[1].result);
 
-    if (ImGui::Button("Write current controller gains")) {
-        PARAM_NOTIFY_CLEANUP_OK( host_->write_float(target_device_, "i_d_kp", controller_gains_[0].kp), "Parameter failed: i_d_kp", clean_up_on_error(); )
-        PARAM_NOTIFY_CLEANUP_OK( host_->write_float(target_device_, "i_d_ki", controller_gains_[0].ki), "Parameter failed: i_d_ki", clean_up_on_error(); )
-        PARAM_NOTIFY_CLEANUP_OK( host_->write_float(target_device_, "i_q_kp", controller_gains_[1].kp), "Parameter failed: i_q_kp", clean_up_on_error(); )
-        PARAM_NOTIFY_CLEANUP_OK( host_->write_float(target_device_, "i_q_ki", controller_gains_[1].ki), "Parameter failed: i_q_ki", clean_up_on_error(); )
-    }
+        render_controller_gains("d", controller_gains_[0]);
+        render_controller_gains("q", controller_gains_[1]);
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    // D/Q step response tests
-    ImGui::Separator();
-    ImGui::NewLine();
+        if (ImGui::Button("Write current controller gains")) {
+            PARAM_NOTIFY_CLEANUP_OK( host_->write_float(target_device_, "i_d_kp", controller_gains_[0].kp), "Parameter failed: i_d_kp", clean_up_on_error(); )
+            PARAM_NOTIFY_CLEANUP_OK( host_->write_float(target_device_, "i_d_ki", controller_gains_[0].ki), "Parameter failed: i_d_ki", clean_up_on_error(); )
+            PARAM_NOTIFY_CLEANUP_OK( host_->write_float(target_device_, "i_q_kp", controller_gains_[1].kp), "Parameter failed: i_q_kp", clean_up_on_error(); )
+            PARAM_NOTIFY_CLEANUP_OK( host_->write_float(target_device_, "i_q_ki", controller_gains_[1].ki), "Parameter failed: i_q_ki", clean_up_on_error(); )
+        }
 
-    test_step_[0].render_ui();
-    if (ImGui::Button("Start D-axis step response test")) {
-        CHECK_CLEANUP_OK( test_step_[0].execute(host_, target_device_), clean_up_on_error(); )
-    }
-    test_step_[0].render_plot();
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        // D/Q step response tests
+        ImGui::Separator();
+        ImGui::NewLine();
 
-    ImGui::Separator();
+        test_step_[0].render_ui();
+        if (ImGui::Button("Start D-axis step response test")) {
+            CHECK_CLEANUP_OK( test_step_[0].execute(host_, target_device_), clean_up_on_error(); )
+        }
+        test_step_[0].render_plot();
 
-    test_step_[1].render_ui();
-    if (ImGui::Button("Start Q-axis step response test")) {
-        CHECK_CLEANUP_OK( test_step_[1].execute(host_, target_device_), clean_up_on_error(); )
-    }
-    test_step_[1].render_plot();
+        ImGui::Separator();
 
-    // End disabled state if needed (but don't clear is_ready_)
-    if (!is_ready_) {
-        ImGui::EndDisabled();
+        test_step_[1].render_ui();
+        if (ImGui::Button("Start Q-axis step response test")) {
+            CHECK_CLEANUP_OK( test_step_[1].execute(host_, target_device_), clean_up_on_error(); )
+        }
+        test_step_[1].render_plot();
     }
     return jcs::RET_OK;
 }
