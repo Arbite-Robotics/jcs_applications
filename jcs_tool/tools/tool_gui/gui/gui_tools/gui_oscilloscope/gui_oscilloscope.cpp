@@ -72,7 +72,7 @@ int gui_oscilloscope::render_interface() {
         if (ImGui::InputInt("Sample Rate", &sample_temp, 1, 100, input_text_flags)) {
             sample_rate_ = sample_temp;
             // Update the channels with the new sample rate
-            for (int ch=0; ch<4; ch++) {
+            for (int ch=0; ch<n_channels_; ch++) {
                 channels_[ch]->update_sample_rate(sample_rate_);
             }
         }
