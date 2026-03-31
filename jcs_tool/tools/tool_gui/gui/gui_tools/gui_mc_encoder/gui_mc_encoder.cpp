@@ -126,8 +126,9 @@ int gui_mc_encoder::render_zero_encoder() {
         // Wait for the dwell period
         bool in_dwell = false;
         long int time_start_dwell_ms = helpers::time_now_ms();
-        long int dwell_timeout_ms = (long int)i_d_alignment_ramp_time_ms_ + 6000;
+        long int dwell_timeout_ms = (long int)i_d_alignment_ramp_time_ms_ + i_d_alignment_settle_time_ms_ + 6000;
         while (!in_dwell) {
+            // Note: This blocks the UI - TODO small state machine?
             PARAM_NOTIFY_ERROR( host_->read_bool(target_device_, "align_in_dwell", &in_dwell), "Parameter failed: align_in_dwell" )
             helpers::sleep_ms(100);
 
@@ -136,8 +137,6 @@ int gui_mc_encoder::render_zero_encoder() {
                 return jcs::RET_ERROR;
             }
         }
-        // Snooze so we are well within the dwell period
-        helpers::sleep_ms(3000);
 
         // Zero the encoder
         switch (active_encoder_.index_) {
