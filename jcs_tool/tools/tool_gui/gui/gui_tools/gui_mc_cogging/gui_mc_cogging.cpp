@@ -5,6 +5,7 @@
 #include <iostream>
 #include "jcs_user_external.h"
 #include "helpers.h"
+#include "imgui_helpers.h"
 #include <cmath>
 #include <numeric>
 #include "ImGuiFileDialog.h"
@@ -54,8 +55,8 @@ int gui_mc_cogging::step_rt() {
 
     switch (state_) {
         default:
-        case behaviour::standby_s: 
-        case behaviour::finish_s: 
+        case behaviour::standby_s:
+        case behaviour::finish_s:
             break;
 
         case behaviour::wait_position_s:
@@ -126,169 +127,164 @@ int gui_mc_cogging::render() {
     if (!can_start_) {
         ImGui::Text("Can't start! Most likely missing signal.");
     }
-    if (!is_ready_) {
-        ImGui::BeginDisabled();
-    }
+    {
+        ImGuiDisabled ui_disabled(!is_ready_);
 
-    ImGui::Separator();
-    ImGui::Text("Configure signals");
-    helpers::combo_select("th_m_0 source",  gui_if_->get_f32_output_signal_names(), &fb_th_m_0_idx_, NULL);
-    helpers::combo_select("w_m_0 source",   gui_if_->get_f32_output_signal_names(), &fb_w_m_0_idx_, NULL);
-    helpers::combo_select("i_q source",     gui_if_->get_f32_output_signal_names(), &fb_i_q_idx_, NULL);
-    helpers::combo_select("th_m_0 command", gui_if_->get_f32_input_signal_names(),  &cmd_th_m_0_idx_, NULL);
+        ImGui::Separator();
+        ImGui::Text("Configure signals");
+        helpers::combo_select("th_m_0 source",  gui_if_->get_f32_output_signal_names(), &fb_th_m_0_idx_, NULL);
+        helpers::combo_select("w_m_0 source",   gui_if_->get_f32_output_signal_names(), &fb_w_m_0_idx_, NULL);
+        helpers::combo_select("i_q source",     gui_if_->get_f32_output_signal_names(), &fb_i_q_idx_, NULL);
+        helpers::combo_select("th_m_0 command", gui_if_->get_f32_input_signal_names(),  &cmd_th_m_0_idx_, NULL);
 
-    ImGui::Separator();
-    ImGui::Text("Starting this test will start JCS system. Ensure it is safe to do so.");
-    if (ImGui::Button("Start test")) {
-        switch (state_) {
-        default:
-        case behaviour::standby_s:
-            initialise();
-            // Start JCS host
-            if (gui_if_->start() != jcs::RET_OK) {
-                state_ = behaviour::standby_s;
-                break;
-            }
-            // Get the zero position at which compensation takes place
-            if (host_->read_float(target_device_, "encoder_0_position_offset", &compensated_at_zero_pos_) != jcs::RET_OK) {
-                state_ = behaviour::standby_s;
-                break;
-            }
-            helpers::sleep_ms(50);
-            state_ = behaviour::wait_position_s;
-            break;
-        case behaviour::wait_position_s:
-        case behaviour::rotate_s:
-        case behaviour::finish_s: 
-            break;
-        }
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Cancel test")) {
-        switch (state_) {
-        default:
-        case behaviour::standby_s: 
-            break;
-        case behaviour::wait_position_s:
-        case behaviour::rotate_s:
-        case behaviour::finish_s: 
-            gui_if_->stop();
-            state_ = behaviour::standby_s;
-            break;
-        }
-    }    
-
-    ImGui::Separator();
-    switch(state_) {
-        default:
-        case behaviour::standby_s: 
-            ImGui::Text("STOPPED");
-            break;
-
-        case behaviour::wait_position_s:
-        case behaviour::rotate_s:
-            ImGui::Text("RUNNING");    
-            break;
-
-        case behaviour::finish_s:
-            ImGui::Text("RUNNING"); 
-            gui_if_->stop();
-            compute_outputs();
-            state_ = behaviour::standby_s;
-            break;
-    }
-
-    // Some nice stats
-    static ImGuiTableFlags table_flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | 
-                                         ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
-    if (ImGui::BeginTable("Measurements", 2, table_flags)) {
-        ImGui::TableSetupColumn("##", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("##", ImGuiTableColumnFlags_WidthStretch);
-
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0); ImGui::Text("th_m_0");
-        ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", signals_out_[fb_th_m_0_idx_]);
-
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0); ImGui::Text("w_m_0");
-        ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", signals_out_[fb_w_m_0_idx_]);
-
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0); ImGui::Text("i_q");
-        ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", signals_out_[fb_i_q_idx_]);
-
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0); ImGui::Text("th_m");
-        ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", signals_in_[cmd_th_m_0_idx_]);
-
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0); ImGui::Text("state");
-        switch (state_) {
+        ImGui::Separator();
+        ImGui::Text("Starting this test will start JCS system. Ensure it is safe to do so.");
+        if (ImGui::Button("Start test")) {
+            switch (state_) {
             default:
-            case behaviour::standby_s:       ImGui::TableSetColumnIndex(1); ImGui::Text("standby_s"); break;
-            case behaviour::finish_s:        ImGui::TableSetColumnIndex(1); ImGui::Text("finish_s"); break;
-            case behaviour::wait_position_s: ImGui::TableSetColumnIndex(1); ImGui::Text("wait_position_s"); break;
-            case behaviour::rotate_s:        ImGui::TableSetColumnIndex(1); ImGui::Text("rotate_s"); break;
+            case behaviour::standby_s:
+                initialise();
+                // Start JCS host
+                if (gui_if_->start() != jcs::RET_OK) {
+                    state_ = behaviour::standby_s;
+                    break;
+                }
+                // Get the zero position at which compensation takes place
+                if (host_->read_float(target_device_, "encoder_0_position_offset", &compensated_at_zero_pos_) != jcs::RET_OK) {
+                    state_ = behaviour::standby_s;
+                    break;
+                }
+                helpers::sleep_ms(50);
+                state_ = behaviour::wait_position_s;
+                break;
+            case behaviour::wait_position_s:
+            case behaviour::rotate_s:
+            case behaviour::finish_s:
+                break;
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel test")) {
+            switch (state_) {
+            default:
+            case behaviour::standby_s:
+                break;
+            case behaviour::wait_position_s:
+            case behaviour::rotate_s:
+            case behaviour::finish_s:
+                gui_if_->stop();
+                state_ = behaviour::standby_s;
+                break;
+            }
         }
 
-        ImGui::EndTable();
-    }
-    {
-        float progress = (float)rotation_tick_ / (float)rotation_steps_; 
-        char buf[32];
-        sprintf(buf, "%d/%d", rotation_tick_, rotation_steps_);
-        ImGui::ProgressBar(progress, ImVec2(0.0f, 0.0f), buf);
-        ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-        ImGui::Text("Test progress");
-    }
-    // {
-    //     float error = (1.0f - (theta_error_ / (2.0f*(float)M_PI)));
-    //     ImGui::ProgressBar(error, ImVec2(0.0f, 0.0f));
-    //     ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-    //     ImGui::Text("Position error");
-    // }
+        ImGui::Separator();
+        switch(state_) {
+            default:
+            case behaviour::standby_s:
+                ImGui::Text("STOPPED");
+                break;
 
-    plot_result_.plot();
+            case behaviour::wait_position_s:
+            case behaviour::rotate_s:
+                ImGui::Text("RUNNING");
+                break;
 
-    ImGui::Separator();
-    ImGui::Text("The final result has the following:");
-    ImGui::Text(" - Angle in the range [0, 2pi].");
-    ImGui::Text(" - Any bias due to friction removed. (Subract mean i_q)");
-
-    ImGui::Text("Raw output mean: %.3f", computed_mean_);
-
-    if (ImGui::Button("Recompute outputs")) { compute_outputs(); }
-
-    plot_final_.plot();
-    plot_vis_.plot();
-
-    ImGui::Separator();
-    ImGui::Text("Cogging compensator activation range");
-    {
-        float value = cogging_compensator_upper_w_m_low_;
-        if (ImGui::InputFloat("cogging_compensator_upper_w_m_low", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
-            cogging_compensator_upper_w_m_low_ = value;
+            case behaviour::finish_s:
+                ImGui::Text("RUNNING");
+                gui_if_->stop();
+                compute_outputs();
+                state_ = behaviour::standby_s;
+                break;
         }
-    }
-    {
-        float value = cogging_compensator_upper_w_m_high_;
-        if (ImGui::InputFloat("cogging_compensator_upper_w_m_high", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
-            cogging_compensator_upper_w_m_high_ = value;
+
+        // Some nice stats
+        static ImGuiTableFlags table_flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | 
+                                             ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
+        if (ImGui::BeginTable("Measurements", 2, table_flags)) {
+            ImGui::TableSetupColumn("##", ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableSetupColumn("##", ImGuiTableColumnFlags_WidthStretch);
+
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0); ImGui::Text("th_m_0");
+            ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", signals_out_[fb_th_m_0_idx_]);
+
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0); ImGui::Text("w_m_0");
+            ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", signals_out_[fb_w_m_0_idx_]);
+
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0); ImGui::Text("i_q");
+            ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", signals_out_[fb_i_q_idx_]);
+
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0); ImGui::Text("th_m");
+            ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", signals_in_[cmd_th_m_0_idx_]);
+
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0); ImGui::Text("state");
+            switch (state_) {
+                default:
+                case behaviour::standby_s:       ImGui::TableSetColumnIndex(1); ImGui::Text("standby_s"); break;
+                case behaviour::finish_s:        ImGui::TableSetColumnIndex(1); ImGui::Text("finish_s"); break;
+                case behaviour::wait_position_s: ImGui::TableSetColumnIndex(1); ImGui::Text("wait_position_s"); break;
+                case behaviour::rotate_s:        ImGui::TableSetColumnIndex(1); ImGui::Text("rotate_s"); break;
+            }
+
+            ImGui::EndTable();
         }
-    }
+        {
+            float progress = (float)rotation_tick_ / (float)rotation_steps_;
+            char buf[32];
+            sprintf(buf, "%d/%d", rotation_tick_, rotation_steps_);
+            ImGui::ProgressBar(progress, ImVec2(0.0f, 0.0f), buf);
+            ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+            ImGui::Text("Test progress");
+        }
+        // {
+        //     float error = (1.0f - (theta_error_ / (2.0f*(float)M_PI)));
+        //     ImGui::ProgressBar(error, ImVec2(0.0f, 0.0f));
+        //     ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+        //     ImGui::Text("Position error");
+        // }
 
-    ImGui::Separator();
-    if (ImGui::Button("Write coefficients to device")) {
-        host_->write_float(target_device_, "cogging_compensator_coeffs", plot_final_.y_);
-        host_->write_float(target_device_, "cogging_compensator_upper_w_m_low", cogging_compensator_upper_w_m_low_);
-        host_->write_float(target_device_, "cogging_compensator_upper_w_m_high", cogging_compensator_upper_w_m_high_);
-    }
+        plot_result_.plot();
 
-    write_coeffs_to_file();
+        ImGui::Separator();
+        ImGui::Text("The final result has the following:");
+        ImGui::Text(" - Angle in the range [0, 2pi].");
+        ImGui::Text(" - Any bias due to friction removed. (Subract mean i_q)");
 
-    // Cleanup, but don't clear is_ready here
-    if (!is_ready_) {
-        ImGui::EndDisabled();
+        ImGui::Text("Raw output mean: %.3f", computed_mean_);
+
+        if (ImGui::Button("Recompute outputs")) { compute_outputs(); }
+
+        plot_final_.plot();
+        plot_vis_.plot();
+
+        ImGui::Separator();
+        ImGui::Text("Cogging compensator activation range");
+        {
+            float value = cogging_compensator_upper_w_m_low_;
+            if (ImGui::InputFloat("cogging_compensator_upper_w_m_low", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
+                cogging_compensator_upper_w_m_low_ = value;
+            }
+        }
+        {
+            float value = cogging_compensator_upper_w_m_high_;
+            if (ImGui::InputFloat("cogging_compensator_upper_w_m_high", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
+                cogging_compensator_upper_w_m_high_ = value;
+            }
+        }
+
+        ImGui::Separator();
+        if (ImGui::Button("Write coefficients to device")) {
+            host_->write_float(target_device_, "cogging_compensator_coeffs", plot_final_.y_);
+            host_->write_float(target_device_, "cogging_compensator_upper_w_m_low", cogging_compensator_upper_w_m_low_);
+            host_->write_float(target_device_, "cogging_compensator_upper_w_m_high", cogging_compensator_upper_w_m_high_);
+        }
+
+        write_coeffs_to_file();
     }
 
     return jcs::RET_OK;
