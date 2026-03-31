@@ -2,6 +2,7 @@
 // https://arbite.io
 //
 #include "gui_mc_current_test.h"
+#include "imgui_helpers.h"
 #include <iostream>
 #include "jcs_user_external.h"
 #include "jcs_dev_motor_controller.h"
@@ -117,122 +118,119 @@ int gui_mc_current_test::render() {
     if (!can_start_) {
         ImGui::Text("Can't start! Most likely missing signal.");
     }
-    if (!is_ready_) {
-        ImGui::BeginDisabled();
-    }
 
-    get_test_parameters();
-    ImGui::Separator();
-    
-    sampler_.render_interface();
-    ImGui::Separator();
-    
-    // Controls
-    ImGui::Text("Starting this test will start JCS system. Ensure it is safe to do so.");
-    if (ImGui::Button("Start test")) {
-        switch (state_) {
-            default:
-            case state::off_s:
-                f32_input_signal_store_[ signal_in_source_i_d_.index_ ] = 0.0f;
-                f32_input_signal_store_[ signal_in_source_th_m_.index_ ] = 0.0f;
-                f32_input_signal_store_[ signal_in_source_w_m_.index_ ] = 0.0f;
-                i_ramp_.start(0.0, test_current_, ramp_time_s_, 0.5, dwell_time_s_);
-                // Start JCS host
-                if (gui_if_->start() != jcs::RET_OK) {
+    {
+        ImGuiDisabled ui_disabled(!is_ready_);
+
+        get_test_parameters();
+        ImGui::Separator();
+
+        sampler_.render_interface();
+        ImGui::Separator();
+
+        // Controls
+        ImGui::Text("Starting this test will start JCS system. Ensure it is safe to do so.");
+        if (ImGui::Button("Start test")) {
+            switch (state_) {
+                default:
+                case state::off_s:
+                    f32_input_signal_store_[ signal_in_source_i_d_.index_ ] = 0.0f;
+                    f32_input_signal_store_[ signal_in_source_th_m_.index_ ] = 0.0f;
+                    f32_input_signal_store_[ signal_in_source_w_m_.index_ ] = 0.0f;
+                    i_ramp_.start(0.0, test_current_, ramp_time_s_, 0.5, dwell_time_s_);
+                    // Start JCS host
+                    if (gui_if_->start() != jcs::RET_OK) {
+                        state_ = state::off_s;
+                        break;
+                    }
+                    state_ = state::ramp_to_current_s;
+                    break;
+                case state::ramp_to_current_s:
+                case state::rotate_s:
+                case state::finish_s:
+                    break;
+            }
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Stop test")) {
+            switch (state_) {
+                default:
+                case state::off_s:
+                    break;
+                case state::ramp_to_current_s:
+                case state::rotate_s:
+                case state::finish_s:
+                    f32_input_signal_store_[ signal_in_source_i_d_.index_ ] = 0.0f;
+                    sampler_.stop();
+                    gui_if_->stop();
                     state_ = state::off_s;
                     break;
-                }
-                state_ = state::ramp_to_current_s;
-                break;
-            case state::ramp_to_current_s:
-            case state::rotate_s:
-            case state::finish_s:
-                break;
+            }
         }
-    }
+        ImGui::SameLine();
+        if (ImGui::Button("Force sampler start")) {
+            sampler_.start();
+        }
+        ImGui::Separator();
 
-    ImGui::SameLine();
-    if (ImGui::Button("Stop test")) {
+        ImGui::Text("Rotator State: ");
+        ImGui::SameLine();
         switch (state_) {
             default:
             case state::off_s:
+                ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.0f, 1.0f), "Off");
                 break;
             case state::ramp_to_current_s:
+                ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0f, 1.0f), "Ramping");
+                break;
             case state::rotate_s:
+                ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0f, 1.0f), "Rotating");
+                break;
+
             case state::finish_s:
-                f32_input_signal_store_[ signal_in_source_i_d_.index_ ] = 0.0f;
+                ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0f, 1.0f), "Stopping");
                 sampler_.stop();
                 gui_if_->stop();
                 state_ = state::off_s;
                 break;
         }
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Force sampler start")) {
-        sampler_.start();
-    }
-    ImGui::Separator();
+        ImGui::Separator();
 
-    ImGui::Text("Rotator State: ");
-    ImGui::SameLine();
-    switch (state_) {
-        default:
-        case state::off_s:
-            ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.0f, 1.0f), "Off");
-            break;
-        case state::ramp_to_current_s:
-            ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0f, 1.0f), "Ramping");
-            break;
-        case state::rotate_s:
-            ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0f, 1.0f), "Rotating");
-            break;
+        sampler_.render_status();
+        // Some nice stats
+        static ImGuiTableFlags table_flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | 
+                                             ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
+        if (ImGui::BeginTable("Measurements", 3, table_flags)) {
+            ImGui::TableSetupColumn("Signal", ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableSetupColumn("Commanded value", ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableSetupColumn("Measured value", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableHeadersRow();
 
-        case state::finish_s:
-            ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0f, 1.0f), "Stopping");
-            sampler_.stop();
-            gui_if_->stop();
-            state_ = state::off_s;
-            break;
-    }
-    ImGui::Separator();
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0); ImGui::Text("th_m_0");
+            ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", f32_input_signal_store_[ signal_in_source_th_m_.index_ ]);
+            ImGui::TableSetColumnIndex(2); ImGui::Text("%.6f", f32_output_signal_store_[signal_out_th_m_0_idx_]);
 
-    sampler_.render_status();
-    // Some nice stats
-    static ImGuiTableFlags table_flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | 
-                                         ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
-    if (ImGui::BeginTable("Measurements", 3, table_flags)) {
-        ImGui::TableSetupColumn("Signal", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Commanded value", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Measured value", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableHeadersRow();
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0); ImGui::Text("w_m_0");
+            ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", f32_input_signal_store_[ signal_in_source_w_m_.index_ ]);
+            ImGui::TableSetColumnIndex(2); ImGui::Text("%.6f", f32_output_signal_store_[signal_out_w_m_0_idx_]);
 
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0); ImGui::Text("th_m_0");
-        ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", f32_input_signal_store_[ signal_in_source_th_m_.index_ ]);
-        ImGui::TableSetColumnIndex(2); ImGui::Text("%.6f", f32_output_signal_store_[signal_out_th_m_0_idx_]);
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0); ImGui::Text("i_d");
+            ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", f32_input_signal_store_[ signal_in_source_i_d_.index_ ]);
+            ImGui::TableSetColumnIndex(2); ImGui::Text("%.6f", f32_output_signal_store_[signal_out_i_d_idx_]);
 
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0); ImGui::Text("w_m_0");
-        ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", f32_input_signal_store_[ signal_in_source_w_m_.index_ ]);
-        ImGui::TableSetColumnIndex(2); ImGui::Text("%.6f", f32_output_signal_store_[signal_out_w_m_0_idx_]);
+            ImGui::EndTable();
+        }
+        ImGui::Separator();
 
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0); ImGui::Text("i_d");
-        ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", f32_input_signal_store_[ signal_in_source_i_d_.index_ ]);
-        ImGui::TableSetColumnIndex(2); ImGui::Text("%.6f", f32_output_signal_store_[signal_out_i_d_idx_]);
+        sampler_.render_plots();
+        ImGui::Separator();
 
-        ImGui::EndTable();
-    }
-    ImGui::Separator();
+        sampler_.channels_write_to_file();
 
-    sampler_.render_plots();
-    ImGui::Separator();
-
-    sampler_.channels_write_to_file();
-
-    // Cleanup, but don't clear is_ready here
-    if (!is_ready_) {
-        ImGui::EndDisabled();
     }
 
     return jcs::RET_OK;
