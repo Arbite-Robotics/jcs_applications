@@ -4,6 +4,7 @@
 #include "gui_device_brake_clutch.h"
 #include "gui_parameter.h"
 #include "gui_bc_tune.h"
+#include "gui_oscilloscope.h"
 #include "gui_firmware_update.h"
 #include <iostream>
 
@@ -15,6 +16,12 @@ gui_device_brake_clutch::gui_device_brake_clutch(jcs::jcs_host* host, gui_interf
     gui_element_.push_back(new gui_parameter(host_, gui_if_, name_,
         &jcs::node_parameter::dev_brake_clutch::parameters, &jcs::node_parameter::dev_brake_clutch::parameter_enums));
     gui_element_.push_back(new gui_bc_tune(host_, gui_if_, name_));
+    gui_element_.push_back(new gui_oscilloscope(host_, gui_if_, name_,
+        &jcs::node_parameter::dev_brake_clutch::oscilloscope_sources,
+        &jcs::node_parameter::dev_brake_clutch::oscilloscope_trigger_config,
+        jcs::node_parameter::dev_brake_clutch::oscilloscope_sample_rate_hz,
+        jcs::node_parameter::dev_brake_clutch::oscilloscope_sample_length,
+        jcs::node_parameter::dev_brake_clutch::oscilloscope_n_channels));
     gui_element_.push_back(new gui_firmware_update(host_, gui_if_, name_));
 }
 
