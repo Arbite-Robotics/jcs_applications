@@ -5,7 +5,7 @@
 #include <iostream>
 #include "jcs_user_external.h"
 #include "helpers.h"
-
+#include "imgui_helpers.h"
 #include "jcs_dev_motor_controller.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -30,35 +30,20 @@ int gui_mc_encoder::step_rt() {
 }
 
 int gui_mc_encoder::render() {
-
     ImGui::Text("Encoder tool");
 
     ImGui::Separator();
     if (ImGui::Button("Click to make motor controller ready for tests!")) {
-        if (ready_test() != jcs::RET_OK) {
-            // Test failed - just return
-            return jcs::RET_OK;
-        }
+        if (ready_test() != jcs::RET_OK) { return jcs::RET_OK; }
         is_ready_ = true;
     }
 
-    if (!is_ready_) {
-        ImGui::BeginDisabled();
-    }
-
-    // Cleanup function
-    auto clean_up_on_error = [&]() {
-        if (!is_ready_) {
-            ImGui::EndDisabled();
-        }
-        is_ready_ = false;
-    };
-
-    CHECK_CLEANUP_OK( render_zero_encoder(), clean_up_on_error(); )
-
-    // Cleanup, but don't clear is_ready here
-    if (!is_ready_) {
-        ImGui::EndDisabled();
+    {
+        ImGuiDisabled ui_disabled(!is_ready_);
+        auto clean_up_on_error = [&]() {
+            is_ready_ = false;
+        };
+        CHECK_CLEANUP_OK( render_zero_encoder(), clean_up_on_error(); )
     }
 
     return jcs::RET_OK;
@@ -103,13 +88,13 @@ int gui_mc_encoder::render_zero_encoder() {
             i_d_alignment_settle_time_ms_ = (uint16_t)value;
         }
     }
-    if (ImGui::Button("Start zero")) {
 
+    if (ImGui::Button("Start zero")) {
         {
             bool ctrl_is_temperature_clamped = false;
             PARAM_NOTIFY_ERROR( host_->read_bool(target_device_,  "temperature_penalty_ctrl_is_clamped", &ctrl_is_temperature_clamped), "Parameter failed: temperature_penalty_ctrl_is_clamped" )
 
-            if (ctrl_is_temperature_clamped == true) {
+            if (ctrl_is_temperature_clamped) {
                 std::cout << "ERROR: Device control is temperature clamped. Cannot continue with test.\n";
                 return jcs::RET_ERROR;
             }
@@ -142,7 +127,6 @@ int gui_mc_encoder::render_zero_encoder() {
         PARAM_NOTIFY_ERROR( host_->write_command(target_device_, cmd_position_zero), "Parameter failed: " + cmd_position_zero )
         // Stop the test
         PARAM_NOTIFY_ERROR( host_->write_command(target_device_, "controller_stop"), "Parameter failed: controller_stop" )
-
         helpers::sleep_ms(200);
         std::string cmd_position_offset = active_encoder_.source_ + "_position_offset";
         PARAM_NOTIFY_ERROR( host_->read_float(target_device_, cmd_position_offset, &encoder_position_offset_), "Parameter failed: " + cmd_position_offset )
@@ -158,7 +142,7 @@ int gui_mc_encoder::render_zero_encoder() {
 int gui_mc_encoder::ready_test() {
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // Disable the host sentry as we do not plan to enter synchronous mode     
-    PARAM_NOTIFY_ERROR( host_->write_bool(target_device_, "host_sentry_active", false), "Parameter failed: host_sentry_active" )   
+    PARAM_NOTIFY_ERROR( host_->write_bool(target_device_, "host_sentry_active", false), "Parameter failed: host_sentry_active" )
     // Start the motor controller and wait for it to calibrate
     PARAM_NOTIFY_ERROR( host_->write_command(target_device_, "start"), "Parameter failed: start" )
     helpers::sleep_ms(500);
