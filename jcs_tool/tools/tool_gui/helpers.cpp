@@ -96,7 +96,7 @@ void helpers::listbox_select(std::string const& name, std::vector<std::string>* 
 void helpers::result_text_copyable(std::string const& text, float const& result) {
     std::string res_text = text + std::to_string(result);
     ImGui::PushID(res_text.c_str());
-    ImGui::InputText("", &res_text, ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputText("", &res_text, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AutoSelectAll);
     ImGui::PopID();
 }
 void helpers::result_text_copyable(std::string const& text, int const height, std::vector<float> const& result, int const wrap_after_elements) {
