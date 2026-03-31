@@ -7,6 +7,7 @@
 #include "jcs_dev_motor_controller.h"
 #include <math.h>
 #include "ImGuiFileDialog.h"
+#include "imgui_helpers.h"
 
 //////////////////////////////////////////////////////////////////////
 gui_mc_encoder_calib::gui_mc_encoder_calib(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) :
@@ -252,129 +253,125 @@ int gui_mc_encoder_calib::render() {
     if (!can_start_) {
         ImGui::Text("Can't start! Most likely missing signal.");
     }
-    if (!is_ready_) {
-        ImGui::BeginDisabled();
-    }
 
-    get_test_parameters();
+    {
+        ImGuiDisabled ui_disabled(!is_ready_);
 
-    ImGui::Separator();    
-    // Controls
-    ImGui::Text("Starting this test will start JCS system. Ensure it is safe to do so.");
-    if (ImGui::Button("Start test")) {
-        if (state_ == state::off_s) {
-            state_ = state::initialise_s;
+        get_test_parameters();
+
+        ImGui::Separator();
+        // Controls
+        ImGui::Text("Starting this test will start JCS system. Ensure it is safe to do so.");
+        if (ImGui::Button("Start test")) {
+            if (state_ == state::off_s) {
+                state_ = state::initialise_s;
+            }
         }
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Stop test")) {
-        if (state_ != state::off_s) {
-            state_ = state::finish_s;
+        ImGui::SameLine();
+        if (ImGui::Button("Stop test")) {
+            if (state_ != state::off_s) {
+                state_ = state::finish_s;
+            }
         }
-    }
 
-    ImGui::Separator();
-    ImGui::Text("Rotator State: ");
-    ImGui::SameLine();
-    switch (state_) {
-        default:
-        case state::off_s:             ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.0f, 1.0f), "Off");      break;
-        case state::initialise_s:      // Fallthrough
-        case state::ramp_to_current_s: ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0f, 1.0f), "Ramping");  break;
-        case state::rotate_s:          ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0f, 1.0f), "Rotating"); break;
-        case state::finish_ramp_s:      // Fallthrough
-        case state::finish_s:          ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0f, 1.0f), "Stopping"); break;
-    }
-
-    // Some nice stats
-    static ImGuiTableFlags table_flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | 
-                                         ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
-    if (ImGui::BeginTable("Measurements", 3, table_flags)) {
-        ImGui::TableSetupColumn("Signal", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Commanded value", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Measured value", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableHeadersRow();
-
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0); ImGui::Text("th_m_0");
-        ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", f32_input_signal_store_[ signal_in_source_th_m_.index_ ]);
-        ImGui::TableSetColumnIndex(2); ImGui::Text("%.6f", f32_output_signal_store_[signal_out_th_m_0_idx_]);
-
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
-        switch (vi_mode_) {
-            case vi_mode::current_s: ImGui::Text("i_d"); break;
-            case vi_mode::voltage_s: ImGui::Text("v_d"); break;
+        ImGui::Separator();
+        ImGui::Text("Rotator State: ");
+        ImGui::SameLine();
+        switch (state_) {
+            default:
+            case state::off_s:             ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.0f, 1.0f), "Off");      break;
+            case state::initialise_s:      // Fallthrough
+            case state::ramp_to_current_s: ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0f, 1.0f), "Ramping");  break;
+            case state::rotate_s:          ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0f, 1.0f), "Rotating"); break;
+            case state::finish_ramp_s:      // Fallthrough
+            case state::finish_s:          ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0f, 1.0f), "Stopping"); break;
         }
-        ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", f32_input_signal_store_[ signal_in_source_d_.index_ ]);
-        ImGui::TableSetColumnIndex(2); ImGui::Text("%.6f", f32_output_signal_store_[signal_out_d_idx_]);
 
-        ImGui::EndTable();
-    }
+        // Some nice stats
+        static ImGuiTableFlags table_flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | 
+                                             ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
+        if (ImGui::BeginTable("Measurements", 3, table_flags)) {
+            ImGui::TableSetupColumn("Signal", ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableSetupColumn("Commanded value", ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableSetupColumn("Measured value", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableHeadersRow();
 
-    ImGui::Separator();
-    th_m_orig_.plot();
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0); ImGui::Text("th_m_0");
+            ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", f32_input_signal_store_[ signal_in_source_th_m_.index_ ]);
+            ImGui::TableSetColumnIndex(2); ImGui::Text("%.6f", f32_output_signal_store_[signal_out_th_m_0_idx_]);
 
-    ImGui::Separator();
-    ImGui::Text("Calibration");
-    if (ImGui::Button("Compute new calibration")) {
-        mc_encoder_corrector::build_correction_table(&correction_table_, th_m_orig_reference_->y_, th_m_orig_recorded_->y_, calib_points_);
-        // Apply the correction and sundry
-        for (int i=0; i<th_m_orig_reference_->y_.size(); ++i) {
-            float th_m = static_cast<float>(th_m_orig_recorded_->y_.at(i));
-            float th_corrected = mc_encoder_corrector::apply_correction(th_m, correction_table_.corrections_increment);
-            // Store the corrected data
-            th_m_corrected_corrected_->y_.at(i) = th_corrected;
-            // Store the original data for plotting - recorded
-            th_m_corrected_reference_->y_.at(i) = th_m_orig_reference_->y_.at(i);
-            // Store the original data for plotting - reference
-            th_m_corrected_recorded_->y_.at(i) = th_m_orig_recorded_->y_.at(i);
-            // compute the corrected error
-            th_m_error_corrected_->y_.at(i) = helpers::angle_norm_pipi(th_m_orig_reference_->y_.at(i) - th_corrected);
-            // Original error computed during test run
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            switch (vi_mode_) {
+                case vi_mode::current_s: ImGui::Text("i_d"); break;
+                case vi_mode::voltage_s: ImGui::Text("v_d"); break;
+            }
+            ImGui::TableSetColumnIndex(1); ImGui::Text("%.6f", f32_input_signal_store_[ signal_in_source_d_.index_ ]);
+            ImGui::TableSetColumnIndex(2); ImGui::Text("%.6f", f32_output_signal_store_[signal_out_d_idx_]);
+
+            ImGui::EndTable();
         }
-        // Print calib factors
-        // std::cout << "Correction values:\n";
-        // for (int i=0; i<correction_table_.corrections.size()-1; i++) {
-        //     std::cout << correction_table_.corrections[i] << ", ";
-        // }
-        // std::cout << correction_table_.corrections[correction_table_.corrections.size()-1] << "\n";
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Write calibration to device")) {
-        host_->write_float(target_device_, configured_encoder_+"_linearisation_coeffs", correction_table_.corrections);
-    }
 
-    ImGui::Separator();
-    ImGui::Text("Tools");
-    if (ImGui::Button("Clear calibration")) {
-        // Clear the device calibration
-        std::vector<float> cleared;
-        cleared.resize(calib_points_);
-        std::fill(cleared.begin(), cleared.end(), 0.0f);
-        host_->write_float(target_device_, configured_encoder_+"_linearisation_coeffs", cleared);
-        // Clear the corrector
-        mc_encoder_corrector::clear_correction_table(&correction_table_);
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Read calibration from device")) {
-        host_->read_float(target_device_, configured_encoder_+"_linearisation_coeffs", &correction_table_.corrections);
-    }
+        ImGui::Separator();
+        th_m_orig_.plot();
 
-    ImGui::Separator();
-    ImGui::Text("Encoder RMS error  : %7.5f", correction_table_.rms_error);
-    ImGui::Text("Corrected RMS error: %7.5f", correction_table_.rms_error_corrected);
+        ImGui::Separator();
+        ImGui::Text("Calibration");
+        if (ImGui::Button("Compute new calibration")) {
+            mc_encoder_corrector::build_correction_table(&correction_table_, th_m_orig_reference_->y_, th_m_orig_recorded_->y_, calib_points_);
+            // Apply the correction and sundry
+            for (int i=0; i<th_m_orig_reference_->y_.size(); ++i) {
+                float th_m = static_cast<float>(th_m_orig_recorded_->y_.at(i));
+                float th_corrected = mc_encoder_corrector::apply_correction(th_m, correction_table_.corrections_increment);
+                // Store the corrected data
+                th_m_corrected_corrected_->y_.at(i) = th_corrected;
+                // Store the original data for plotting - recorded
+                th_m_corrected_reference_->y_.at(i) = th_m_orig_reference_->y_.at(i);
+                // Store the original data for plotting - reference
+                th_m_corrected_recorded_->y_.at(i) = th_m_orig_recorded_->y_.at(i);
+                // compute the corrected error
+                th_m_error_corrected_->y_.at(i) = helpers::angle_norm_pipi(th_m_orig_reference_->y_.at(i) - th_corrected);
+                // Original error computed during test run
+            }
+            // Print calib factors
+            // std::cout << "Correction values:\n";
+            // for (int i=0; i<correction_table_.corrections.size()-1; i++) {
+            //     std::cout << correction_table_.corrections[i] << ", ";
+            // }
+            // std::cout << correction_table_.corrections[correction_table_.corrections.size()-1] << "\n";
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Write calibration to device")) {
+            host_->write_float(target_device_, configured_encoder_+"_linearisation_coeffs", correction_table_.corrections);
+        }
 
-    ImGui::Separator();
-    helpers::result_text_copyable(configured_encoder_+"_linearisation_coeffs: ", 9, correction_table_.corrections, 8);
+        ImGui::Separator();
+        ImGui::Text("Tools");
+        if (ImGui::Button("Clear calibration")) {
+            // Clear the device calibration
+            std::vector<float> cleared;
+            cleared.resize(calib_points_);
+            std::fill(cleared.begin(), cleared.end(), 0.0f);
+            host_->write_float(target_device_, configured_encoder_+"_linearisation_coeffs", cleared);
+            // Clear the corrector
+            mc_encoder_corrector::clear_correction_table(&correction_table_);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Read calibration from device")) {
+            host_->read_float(target_device_, configured_encoder_+"_linearisation_coeffs", &correction_table_.corrections);
+        }
 
-    ImGui::Separator();
-    th_m_error_.plot();
-    th_m_corrected_.plot();
+        ImGui::Separator();
+        ImGui::Text("Encoder RMS error  : %7.5f", correction_table_.rms_error);
+        ImGui::Text("Corrected RMS error: %7.5f", correction_table_.rms_error_corrected);
 
-    // Cleanup, but don't clear is_ready here
-    if (!is_ready_) {
-        ImGui::EndDisabled();
+        ImGui::Separator();
+        helpers::result_text_copyable(configured_encoder_+"_linearisation_coeffs: ", 9, correction_table_.corrections, 8);
+
+        ImGui::Separator();
+        th_m_error_.plot();
+        th_m_corrected_.plot();
     }
 
     return jcs::RET_OK;
