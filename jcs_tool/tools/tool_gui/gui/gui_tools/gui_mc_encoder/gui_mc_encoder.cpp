@@ -138,44 +138,19 @@ int gui_mc_encoder::render_zero_encoder() {
             }
         }
 
-        // Zero the encoder
-        switch (active_encoder_.index_) {
-            default:
-            case 0:
-                PARAM_NOTIFY_ERROR( host_->write_command(target_device_, "encoder_0_position_zero"), "Parameter failed: encoder_0_position_zero" )
-                break;
-            case 1:
-                PARAM_NOTIFY_ERROR( host_->write_command(target_device_, "encoder_1_position_zero"), "Parameter failed: encoder_1_position_zero" )
-                break;
-        }
-
+        std::string cmd_position_zero = active_encoder_.source_ + "_position_zero";
+        PARAM_NOTIFY_ERROR( host_->write_command(target_device_, cmd_position_zero), "Parameter failed: " + cmd_position_zero )
         // Stop the test
         PARAM_NOTIFY_ERROR( host_->write_command(target_device_, "controller_stop"), "Parameter failed: controller_stop" )
 
         helpers::sleep_ms(200);
-
-        // Read back the zero position
-        switch (active_encoder_.index_) {
-            default:
-            case 0:
-                PARAM_NOTIFY_ERROR( host_->read_float(target_device_, "encoder_0_position_offset", &encoder_position_offset_), "Parameter failed: encoder_0_position_offset" )
-                break;
-            case 1:
-                PARAM_NOTIFY_ERROR( host_->read_float(target_device_, "encoder_1_position_offset", &encoder_position_offset_), "Parameter failed: encoder_1_position_offset" )
-                break;
-        }
+        std::string cmd_position_offset = active_encoder_.source_ + "_position_offset";
+        PARAM_NOTIFY_ERROR( host_->read_float(target_device_, cmd_position_offset, &encoder_position_offset_), "Parameter failed: " + cmd_position_offset )
     }
 
     ImGui::Separator();
-    switch (active_encoder_.index_) {
-        default:
-        case 0:
-            helpers::result_text_copyable("encoder_0_position_offset: ", encoder_position_offset_);
-            break;
-        case 1:
-            helpers::result_text_copyable("encoder_1_position_offset: ", encoder_position_offset_);
-            break;
-    }
+    std::string string_position_offset = active_encoder_.source_ + "_position_offset: ";
+    helpers::result_text_copyable(string_position_offset, encoder_position_offset_);
 
     return jcs::RET_OK;
 }
