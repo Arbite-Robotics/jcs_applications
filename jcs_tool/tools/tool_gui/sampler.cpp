@@ -420,3 +420,31 @@ int sampler::emit_data(std::string const& path_and_file) {
     std::cout << "Done\n";
     return jcs::RET_OK;
 }
+
+int sampler::get_channel_data(int channel_idx, std::vector<float>* time_out, std::vector<float>* data_out) {
+    if (channel_idx < 0 || channel_idx >= static_cast<int>(channels_.size())) {
+        return jcs::RET_ERROR;
+    }
+    helpers::scrolling_buffer& buf = channels_[channel_idx]->buffer_;
+    int n = static_cast<int>(buf.data_.size());
+    if (n == 0) {
+        return jcs::RET_ERROR;
+    }
+    if (data_out != nullptr) {
+        data_out->resize(n);
+    }
+    if (time_out != nullptr) {
+        time_out->resize(n);
+    }
+    for (int i = 0; i < n; ++i) {
+        // operator[] handles the circular offset
+        ImVec2 pt = buf[i];
+        if (time_out != nullptr) {
+            (*time_out)[i] = pt.x;
+        }
+        if (data_out != nullptr) {
+            (*data_out)[i] = pt.y;
+        }
+    }
+    return jcs::RET_OK;
+}

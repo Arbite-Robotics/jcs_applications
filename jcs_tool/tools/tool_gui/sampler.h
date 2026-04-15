@@ -38,6 +38,9 @@ public:
 
     int channels_write_to_file();
 
+    int get_channel_count() { return static_cast<int>(channels_.size()); }
+    int get_channel_data(int channel_idx, std::vector<float>* time_out, std::vector<float>* data_out);
+
 private:
     enum class sampler_state {
         off_s,
