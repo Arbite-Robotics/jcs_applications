@@ -251,14 +251,7 @@ void sampler::channel::plot() {
             ImPlot::TagY(cursor_tag_[3], ImVec4(1,0,0,1), "%.3f", cursor_tag_[3]);
         }
 
-        // Hackity hack - Plot a single point when the buffer is empty.
-        // Point 0 is non-existant otherwise
-        if (buffer_is_empty) {
-            ImVec2 dummy(0.0f, 0.0f);
-            ImPlot::PlotLine(source_.c_str(), &dummy.x, &dummy.y, 1, 0, 0, 2*sizeof(float));
-        } else {
-            ImPlot::PlotLine(source_.c_str(), &buffer_.data_[0].x, &buffer_.data_[0].y, buffer_.data_.size() , 0, buffer_.offset_, 2*sizeof(float));
-        }
+        buffer_.plot_line(source_.c_str());
         ImPlot::EndPlot();
     }
     if (plot_cursors_) {
@@ -299,7 +292,6 @@ void sampler::channel::plot() {
             ImGui::Text("delta Y");
             ImGui::TableSetColumnIndex(5);
             ImGui::Text("%.6f", cursor_tag_[2] - cursor_tag_[3]);
-
 
             ImGui::EndTable();
         }
