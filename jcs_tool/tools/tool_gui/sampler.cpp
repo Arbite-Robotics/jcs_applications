@@ -7,7 +7,7 @@
 #include <iomanip>
 #include "ImGuiFileDialog.h"
 
-sampler::sampler(int const base_frequency_hz, std::vector<std::string>* output_signal_names, int const n_channels, int const inital_sample_rate_hz, int const initial_sample_time_s) :
+sampler::sampler(int const base_frequency_hz, std::vector<std::string>* output_signal_names, int const n_channels, int const inital_sample_rate_hz, int const initial_sample_time_s, std::vector<std::string>* channel_labels) :
     base_frequency_hz_(base_frequency_hz),
     f32_output_signal_names_(output_signal_names),
     state_(sampler_state::off_s),
@@ -15,6 +15,7 @@ sampler::sampler(int const base_frequency_hz, std::vector<std::string>* output_s
     storage_length_(1000),
     sample_time_s_(initial_sample_time_s)
 {
+    channel_labels_ = channel_labels;
     // Channels NOT initialised here. We need true dt
     // however - size the vector
     channels_.resize(n_channels);
@@ -35,13 +36,19 @@ sampler::~sampler() {
 
 int sampler::startup(double time_now_ns) {
     // Build the channels first
-    for (int i=0; i<channels_.size(); i++) {
-        channels_[i] = new channel("Channel " + std::to_string(i), 
-                                   "None", 
+    if (channel_labels_ != nullptr && channel_labels_->size() != channels_.size()) {
+        std::cout << "Warning: Sampler channel labels not same size as channels. Using default channel names\n";
+    }
+    bool use_labels = (channel_labels_ != nullptr && channel_labels_->size() == channels_.size());
+    for (int i = 0; i < channels_.size(); i++) {
+        std::string label = use_labels ? channel_labels_->at(i) : ("Channel " + std::to_string(i));
+        channels_[i] = new channel(label,
+                                   "None",
                                    1000,
                                    static_cast<double>(base_frequency_hz_),
                                    sample_rate_hz_);
     }
+
     // Configure the sampler
     if (sampler_reconfigure() != jcs::RET_OK) {
         return jcs::RET_ERROR;
@@ -336,7 +343,7 @@ void sampler::channels_clear() {
 }
 void sampler::channels_render_select_source() {
     for (int i=0; i<channels_.size(); i++) {
-        helpers::combo_select("Channel " + std::to_string(i) + " Source", f32_output_signal_names_, &channels_[i]->source_combo_index_, &channels_[i]->source_);
+        helpers::combo_select(channels_[i]->name_ + " Source", f32_output_signal_names_, &channels_[i]->source_combo_index_, &channels_[i]->source_);
     }
 }
 void sampler::channels_seed_filter(std::vector<float>* input) {

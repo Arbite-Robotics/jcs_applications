@@ -14,7 +14,10 @@
 // multi channel sampler
 class sampler {
 public:
-    sampler(int const base_frequency_hz, std::vector<std::string>* output_signal_names, int const n_channels, int const inital_sample_rate_hz, int const initial_sample_time_s);
+    sampler(int const base_frequency_hz,
+        std::vector<std::string>* output_signal_names, int const n_channels,
+        int const inital_sample_rate_hz, int const initial_sample_time_s,
+        std::vector<std::string>* channel_labels = nullptr);
     ~sampler();
 
     int startup(double time_now_ns);
@@ -44,6 +47,7 @@ private:
     sampler_state state_;
 
     std::vector<std::string>* f32_output_signal_names_;
+    std::vector<std::string>* channel_labels_;
 
     int base_frequency_hz_;
     int sample_rate_hz_;
