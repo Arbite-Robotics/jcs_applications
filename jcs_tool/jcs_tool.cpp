@@ -143,8 +143,6 @@ void* thread_host_rt(void* arg) {
     task_rt::ready_cycle_rt(&thread_host, cycle_time_ns);
 
     while (host_args->do_running) {
-        task_rt::wait_next_cycle_rt(&thread_host, cycle_time_ns);
-
         // Step JCS cyclic
         if (host->step_rt(&cycle_time_ns) != RET_OK) {
             std::cout << "Error: step_rt\n";
@@ -169,7 +167,7 @@ void* thread_host_rt(void* arg) {
                     break;
             }
         }
-
+        task_rt::wait_next_cycle_rt(&thread_host, cycle_time_ns);
     }
 
     tools->step_shutdown_rt();
