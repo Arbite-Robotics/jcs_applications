@@ -197,6 +197,7 @@ void task_rt::wait_next_cycle_rt(thd_context* ctx, int64_t cycle_time_ns) {
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
     if (timespec_less_than(ctx->rt_cycle_ts, now)) {
+        ctx->rt_cycle_ts = now;  // Reset to now
         // std::cout << "OVERRUN\n";
         // Overrun happened - Dont sleep!
         return;
