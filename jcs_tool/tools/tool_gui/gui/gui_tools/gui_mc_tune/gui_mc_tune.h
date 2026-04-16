@@ -11,6 +11,7 @@
 #include <vector>
 #include "gui_type_base.h"
 #include "gui_interface.h"
+#include "mc_test_step_response.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 class test_resistance {
@@ -58,25 +59,6 @@ controller_gains compute_controller_gains(float bw_rads, float resistance, float
 void render_controller_gains(std::string const& axis, controller_gains const& gains);
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-class test_step_response {
-public:
-    std::string axis;
-    float amplitude;
-    int   time_ms;
-
-    std::vector<float> data;
-    std::vector<float> x;
-
-    bool   plot_cursors;
-    double cursor_tag[4];
-
-    test_step_response(std::string const& axis);
-    void render_ui();
-    void render_plot();
-    int execute(jcs::jcs_host* host, std::string const& target);
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////////
 class gui_mc_tune : public gui_type_base {
 public:
     gui_mc_tune(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device);
@@ -102,8 +84,8 @@ private:
     float i_ctl_bw_rads_;
     std::array<controller_gains, 2> controller_gains_;
 
-    // Step response tests
-    std::array<test_step_response, 2> test_step_;
+    // Step response test
+    mc_test_step_response test_step_;
 
     // Device state helpers
     int ready_test();

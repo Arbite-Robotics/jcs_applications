@@ -50,7 +50,7 @@ int test_resistance::execute(jcs::jcs_host* host, std::string const& target) {
     PARAM_NOTIFY_ERROR( host->write_uint16(target, "test_rs_test_time_ms",        time_ms),   "Parameter failed: test_rs_test_time_ms" )
     PARAM_NOTIFY_ERROR( host->write_uint16(target, "test_rs_ramp_time_ms",        ramp_ms),   "Parameter failed: test_rs_ramp_time_ms" )
 
-    PARAM_NOTIFY_ERROR( host->write_enum(target,   "controller_mode", "test_rs"), "Parameter failed: controller_mode" )
+    PARAM_NOTIFY_ERROR( host->write_enum(target,    "controller_mode", "test_rs"), "Parameter failed: controller_mode" )
     PARAM_NOTIFY_ERROR( host->write_command(target, "controller_start"),           "Parameter failed: controller_start" )
 
     // Check for error
@@ -199,145 +199,6 @@ void render_controller_gains(std::string const& axis, controller_gains const& ga
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-// test_step_response
-test_step_response::test_step_response(std::string const& axis)
-    : axis(axis), amplitude(1.0f), time_ms(1000), plot_cursors(false)
-{
-    for (int i = 0; i < 4; i++) {
-        cursor_tag[i] = 0.0;
-    }
-    data.resize(jcs::node_parameter::dev_motor_controller::oscilloscope_sample_length);
-    x.resize(jcs::node_parameter::dev_motor_controller::oscilloscope_sample_length);
-    for (int i = 0; i < (int)x.size(); i++) {
-        x[i] = (float)i / 30000.0f;
-    }
-}
-
-void test_step_response::render_ui() {
-    ImGui::PushID(axis.c_str());
-    ImGui::Text("Step response test parameters for axis: %s", axis.c_str());
-
-    {
-        float value = amplitude;
-        if (ImGui::InputFloat("Amplitude (A)", &value, 0.1f, 1.0f, "%.6f", ImGuiInputTextFlags_EscapeClearsAll)) {
-            amplitude = value;
-        }
-    }
-    {
-        int value = (int)time_ms;
-        if (ImGui::InputInt("Time (ms)", &value, 1, 10, ImGuiInputTextFlags_EscapeClearsAll)) {
-            time_ms = (uint32_t)value;
-        }
-    }
-    ImGui::PopID();
-}
-
-void test_step_response::render_plot() {
-    ImGui::PushID(axis.c_str());
-
-    ImGui::Checkbox("Show measurement cursors", &plot_cursors);
-
-    if (ImPlot::BeginPlot(("Axis: " + axis).c_str())) {
-        ImPlot::SetupAxes("t", "y");
-
-        if (plot_cursors) {
-            ImPlot::DragLineX(0, &cursor_tag[0], ImVec4(1,1,1,1), 1, ImPlotDragToolFlags_NoFit);
-            ImPlot::TagX(cursor_tag[0], ImVec4(1,0,0,1), "%.3f", cursor_tag[0]);
-            ImPlot::DragLineX(1, &cursor_tag[1], ImVec4(1,1,1,1), 1, ImPlotDragToolFlags_NoFit);
-            ImPlot::TagX(cursor_tag[1], ImVec4(1,0,0,1), "%.3f", cursor_tag[1]);
-            ImPlot::DragLineY(2, &cursor_tag[2], ImVec4(1,1,1,1), 1, ImPlotDragToolFlags_NoFit);
-            ImPlot::TagY(cursor_tag[2], ImVec4(1,0,0,1), "%.3f", cursor_tag[2]);
-            ImPlot::DragLineY(3, &cursor_tag[3], ImVec4(1,1,1,1), 1, ImPlotDragToolFlags_NoFit);
-            ImPlot::TagY(cursor_tag[3], ImVec4(1,0,0,1), "%.3f", cursor_tag[3]);
-        }
-
-        ImPlot::PlotLine(axis.c_str(), &x[0], &data[0], x.size());
-        ImPlot::EndPlot();
-    }
-
-    if (plot_cursors) {
-        static ImGuiTableFlags table_flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders |
-                                             ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
-
-        if (ImGui::BeginTable("Measurements", 2, table_flags)) {
-            ImGui::TableSetupColumn("##", ImGuiTableColumnFlags_WidthFixed);
-            ImGui::TableSetupColumn("##", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::Text("delta T");
-            ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%.6f", cursor_tag[0] - cursor_tag[1]);
-
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::Text("delta Y");
-            ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%.6f", cursor_tag[2] - cursor_tag[3]);
-            ImGui::EndTable();
-        }
-    }
-    ImGui::PopID();
-}
-
-int test_step_response::execute(jcs::jcs_host* host, std::string const& target) {
-    float motor_Kt = 1.0f;
-
-    // Read and normalise motor_Kt for the test
-    PARAM_NOTIFY_ERROR( host->read_float(target, "motor_Kt", &motor_Kt), "Parameter failed: motor_Kt" )
-    if (motor_Kt != 1.0f) {
-        PARAM_NOTIFY_ERROR( host->write_float(target, "motor_Kt", 1.0f), "Parameter failed: motor_Kt" )
-    }
-
-    auto restore_kt = [&]() {
-        if (motor_Kt != 1.0f) {
-            PARAM_NOTIFY( host->write_float(target, "motor_Kt", motor_Kt), "Parameter failed: motor_Kt" )
-        }
-    };
-
-    // Set test parameters
-    std::string meas_axis = axis == "d" ? "measure_test_axis_d" : "measure_test_axis_q";
-    PARAM_NOTIFY_ERROR( host->write_enum(target,   "test_step_response_dq_test_axis", meas_axis),  "Parameter failed: test_rs_dq_test_axis" )
-    PARAM_NOTIFY_ERROR( host->write_float(target,  "test_step_response_amplitude",    amplitude),  "Parameter failed: test_rs_v_dq_test_amplitude" )
-    PARAM_NOTIFY_ERROR( host->write_uint16(target, "test_step_response_time_ms",      time_ms),    "Parameter failed: test_rs_test_time_ms" )
-
-    PARAM_NOTIFY_ERROR( host->write_enum(target,   "controller_mode", "test_dq_step_response"), "Parameter failed: controller_mode" )
-
-    // Configure oscilloscope
-    PARAM_NOTIFY_ERROR( host->write_enum(target,   "oscilloscope_trigger_config", "osc_trigger_rising_edge"), "Parameter failed: oscilloscope_trigger_config" )
-    PARAM_NOTIFY_ERROR( host->write_uint32(target, "oscilloscope_sample_rate_hz", 30000), "Parameter failed: oscilloscope_sample_rate_hz" )
-    PARAM_NOTIFY_ERROR( host->write_float(target,  "oscilloscope_trigger_level", 0.01f),  "Parameter failed: oscilloscope_trigger_level" )
-    PARAM_NOTIFY_ERROR( host->write_uint32(target, "oscilloscope_trigger_buffer_position", 0), "Parameter failed: oscilloscope_trigger_buffer_position" )
-
-    if (axis == "d") {
-        PARAM_NOTIFY_ERROR( host->write_enum(target, "oscilloscope_trigger_source",   "mc_osc_foc_i_d_cmd"), "Parameter failed: oscilloscope_trigger_source" )
-        PARAM_NOTIFY_ERROR( host->write_enum(target, "oscilloscope_channel_0_source", "mc_osc_foc_i_d"),     "Parameter failed: oscilloscope_channel_0_source" )
-    } else if (axis == "q") {
-        PARAM_NOTIFY_ERROR( host->write_enum(target, "oscilloscope_trigger_source",   "mc_osc_foc_i_q_cmd"), "Parameter failed: oscilloscope_trigger_source" )
-        PARAM_NOTIFY_ERROR( host->write_enum(target, "oscilloscope_channel_0_source", "mc_osc_foc_i_q"),     "Parameter failed: oscilloscope_channel_0_source" )
-    } else {
-        restore_kt();
-        return jcs::RET_ERROR;
-    }
-
-    PARAM_NOTIFY_ERROR( host->write_command(target, "oscilloscope_wait_trigger"), "Parameter failed: oscilloscope_wait_trigger" )
-    PARAM_NOTIFY_ERROR( host->write_command(target, "controller_start"),          "Parameter failed: controller_start" )
-
-    helpers::sleep_ms(time_ms + 2000);
-
-    // NOTE: standby/ready workaround for large parameter timeout bug
-    PARAM_NOTIFY_ERROR( host->write_command(target, "stop"), "Parameter failed: stop" )
-    helpers::sleep_ms(500);
-
-    PARAM_NOTIFY_ERROR( host->read_float(target, "oscilloscope_channel_0", &data), "Parameter failed: oscilloscope_channel_0" )
-
-    PARAM_NOTIFY_ERROR( host->write_command(target, "start"), "Parameter failed: start" )
-    helpers::sleep_ms(500);
-
-    restore_kt();
-    return jcs::RET_OK;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
 // gui_mc_tune
 gui_mc_tune::gui_mc_tune(jcs::jcs_host* host, gui_interface* gui_if, std::string const& target_device) :
     gui_type_base("Tuning", host, gui_if, target_device),
@@ -346,8 +207,7 @@ gui_mc_tune::gui_mc_tune(jcs::jcs_host* host, gui_interface* gui_if, std::string
     test_l_{ test_inductance("d"), test_inductance("q") },
     lq_equals_ld_(true),
     i_ctl_bw_hz_(500.0f),
-    i_ctl_bw_rads_(0.0f),
-    test_step_{ test_step_response("d"), test_step_response("q") }
+    i_ctl_bw_rads_(0.0f)
 {}
 
 int gui_mc_tune::startup() {
@@ -408,12 +268,6 @@ int gui_mc_tune::render() {
                     return jcs::RET_OK;
                 }
             }
-            // Disable measurement filter for higher frequency tests
-            std::string i_dq_measurement_filter = "";
-            {
-                PARAM_NOTIFY_CLEANUP_OK( host_->read_enum(target_device_, "i_dq_measurement_filter", &i_dq_measurement_filter), "Parameter failed: i_dq_measurement_filter", clean_up_on_error(); )
-                PARAM_NOTIFY_CLEANUP_OK( host_->write_enum(target_device_, "i_dq_measurement_filter", "dq_filter_none"), "Parameter failed: i_dq_measurement_filter", clean_up_on_error(); )
-            }
             // Run resistance test
             CHECK_CLEANUP_OK( test_r_.execute(host_, target_device_), clean_up_on_error(); )
             // Run Ld test
@@ -426,8 +280,6 @@ int gui_mc_tune::render() {
             } else {
                 CHECK_CLEANUP_OK( test_l_[1].execute(host_, target_device_), clean_up_on_error(); )
             }
-            // Restore original dq filter
-            PARAM_NOTIFY_CLEANUP_OK( host_->write_enum(target_device_, "i_dq_measurement_filter", i_dq_measurement_filter), "Parameter failed: i_dq_measurement_filter", clean_up_on_error(); )
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////
@@ -443,7 +295,7 @@ int gui_mc_tune::render() {
             }
         }
         i_ctl_bw_rads_ = i_ctl_bw_hz_ * 2.0f * (float)M_PI;
-        ImGui::Text("Current controller bandwidth %.3f (Rad/s)", i_ctl_bw_rads_);
+        ImGui::Text("Current controller bandwidth: %.3f (Rad/s)", i_ctl_bw_rads_);
 
         controller_gains_[0] = compute_controller_gains(i_ctl_bw_rads_, test_r_.result, test_l_[0].result);
         controller_gains_[1] = compute_controller_gains(i_ctl_bw_rads_, test_r_.result, test_l_[1].result);
@@ -458,24 +310,45 @@ int gui_mc_tune::render() {
             PARAM_NOTIFY_CLEANUP_OK( host_->write_float(target_device_, "i_q_ki", controller_gains_[1].ki), "Parameter failed: i_q_ki", clean_up_on_error(); )
         }
 
-        /////////////////////////////////////////////////////////////////////////////////////////////
-        // D/Q step response tests
         ImGui::Separator();
         ImGui::NewLine();
 
-        test_step_[0].render_ui();
-        if (ImGui::Button("Start D-axis step response test")) {
-            CHECK_CLEANUP_OK( test_step_[0].execute(host_, target_device_), clean_up_on_error(); )
-        }
-        test_step_[0].render_plot();
+        std::string result_str = "";
 
+        result_str += "######################################################################## \n";
+        result_str += "# Motor parameters\n";
+        result_str += "motor_Rs: " + std::to_string(test_r_.result) + "\n";
+        result_str += "motor_Ld: " + helpers::to_string_with_dp(test_l_[0].result, 8) + "\n";
+        result_str += "motor_Lq: " + helpers::to_string_with_dp(test_l_[1].result, 8) + "\n";
+        result_str += "\n";
+        result_str += "######################################################################## \n";
+        result_str += "# Current controller parameters\n";
+        result_str += "# Computed from:\n";
+        result_str += "# motor_Rs: " + std::to_string(test_r_.result) + "\n";
+        result_str += "# motor_Ld: " + helpers::to_string_with_dp(test_l_[0].result, 8) + "\n";
+        result_str += "# motor_Lq: " + helpers::to_string_with_dp(test_l_[1].result, 8) + "\n";
+        result_str += "# Bandwidth Hz   : " + std::to_string(i_ctl_bw_hz_) + "\n";
+        result_str += "# Bandwidth Rad/s: " + std::to_string(i_ctl_bw_rads_) + "\n";
+        result_str += "#\n";
+        result_str += "# D-Axis gains\n";
+        result_str += "i_d_kp: " + std::to_string(controller_gains_[0].kp) + "\n";
+        result_str += "i_d_ki: " + std::to_string(controller_gains_[0].ki) + "\n";
+        result_str += "# Q-Axis gains\n";
+        result_str += "i_q_kp: " + std::to_string(controller_gains_[1].kp) + "\n";
+        result_str += "i_q_ki: " + std::to_string(controller_gains_[1].ki) + "\n";
+        helpers::result_text_copyable(result_str);
+
+
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        // Step response test
         ImGui::Separator();
+        ImGui::NewLine();
 
-        test_step_[1].render_ui();
-        if (ImGui::Button("Start Q-axis step response test")) {
-            CHECK_CLEANUP_OK( test_step_[1].execute(host_, target_device_), clean_up_on_error(); )
+        test_step_.render_ui();
+        if (ImGui::Button("Start step response test")) {
+            CHECK_CLEANUP_OK( test_step_.execute(host_, target_device_), clean_up_on_error(); )
         }
-        test_step_[1].render_plot();
+        test_step_.render_plot();
     }
     return jcs::RET_OK;
 }

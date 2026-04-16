@@ -43,6 +43,7 @@ JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_firmware_update/gui_f
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_host_statistics/gui_host_statistics.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_host_logger/gui_host_logger.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_mc_tune/gui_mc_tune.o
+JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_mc_tune/mc_test_step_response.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_mc_cogging/gui_mc_cogging.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_mc_encoder/gui_mc_encoder.o
 JCS_TOOL_GUI_SRC += build/tools/tool_gui/gui/gui_tools/gui_mc_current_test/gui_mc_current_test.o
