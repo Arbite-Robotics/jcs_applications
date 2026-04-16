@@ -10,6 +10,8 @@
 #include "implot.h"
 #include "jcs_host.h"
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 #include "imgui_stdlib.h"
 #include <math.h>
 
@@ -66,6 +68,7 @@ namespace helpers {
     void result_text_copyable(std::string const& text, int const extra_lines=1);
     void result_text_copyable(std::string const& text, float const& result);
     void result_text_copyable(std::string const& text, int const height, std::vector<float> const& result, int const wrap_after_elements);
+    std::string to_string_with_dp(double val, int dp);
 
     int build_output_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_output_signal_names);
     int build_input_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_input_signal_names);

@@ -147,6 +147,12 @@ void helpers::result_text_copyable(std::string const& text, int const height, st
    ImGui::PopID();
 }
 
+std::string helpers::to_string_with_dp(double val, int dp) {
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(dp) << val;
+    return out.str();
+}
+
 int helpers::build_output_signal_names_list(jcs::jcs_host* host, std::vector<std::string>* f32_output_signal_names) {
     // Build a list of all available output float type, base rate signals
     for (int i=0; i<host->sig_output_sz_unsafe_rt(jcs::signal_type::float32_s, 0); i++) {
