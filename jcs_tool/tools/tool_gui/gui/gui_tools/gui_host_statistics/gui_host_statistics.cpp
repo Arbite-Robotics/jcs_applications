@@ -19,6 +19,8 @@ gui_host_statistics::gui_host_statistics(jcs::jcs_host* host, gui_interface* gui
     start_cycle_time_old_ns_(0),
     cycle_buffer_(2000),
     data_exchange_buffer_(2000),
+    thread_offset_controller_error_buffer_(2000),
+    thread_offset_controller_correction_buffer_(2000),
     max_history_s_(30),
     fit_x_(true), fit_y_(true)
 {}
@@ -30,6 +32,9 @@ int gui_host_statistics::startup() {
     data_exchange_buffer_.update_size(new_buffer_size);
     to_mean_buffer_.update_size(new_buffer_size);
     thread_timestamp_buffer_.update_size(new_buffer_size);
+
+    thread_offset_controller_error_buffer_.update_size(new_buffer_size);
+    thread_offset_controller_correction_buffer_.update_size(new_buffer_size);
 
     t_start_ns_ = (double)jcs::external::time_now_ns();
     return jcs::RET_OK;
@@ -54,6 +59,12 @@ int gui_host_statistics::step_rt_always() {
     start_cycle_time_old_ns_ = timing_.start_cycle_time_ns;
 
     to_mean_buffer_.add_point(t_s_, (float)health_.thread_offset.mean);
+
+    transport_ = host_->statistics_transport_get();
+    // Thread offset PI controller
+    thread_offset_controller_error_buffer_.add_point(t_s_, (float)transport_.thread_offset_error_ns/1000.0f);
+    thread_offset_controller_correction_buffer_.add_point(t_s_, (float)transport_.thread_offset_correction_ns/1000.0f);
+
     return jcs::RET_OK;
 }
 
@@ -230,5 +241,30 @@ int gui_host_statistics::render() {
         ImPlot::EndPlot();
     }
 
+    if (ImPlot::BeginPlot("Thread offset controller error plot")) {
+        ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
+
+        ImPlot::SetupAxes("t (us)", nullptr, x_flags, y_flags);
+        ImPlot::SetupAxisLimits(ImAxis_X1, t_s_ - max_history_s_, t_s_, ImGuiCond_Once);
+        ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
+
+        thread_offset_controller_error_buffer_.plot_line("Error");
+
+        ImPlot::PopStyleVar();
+        ImPlot::EndPlot();
+    }
+
+    if (ImPlot::BeginPlot("Thread offset controller correction plot")) {
+        ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
+
+        ImPlot::SetupAxes("t (us)", nullptr, x_flags, y_flags);
+        ImPlot::SetupAxisLimits(ImAxis_X1, t_s_ - max_history_s_, t_s_, ImGuiCond_Once);
+        ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
+
+        thread_offset_controller_correction_buffer_.plot_line("Correction");
+
+        ImPlot::PopStyleVar();
+        ImPlot::EndPlot();
+    }
     return jcs::RET_OK;
 }

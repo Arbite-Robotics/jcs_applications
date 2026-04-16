@@ -27,6 +27,10 @@ private:
     helpers::scrolling_buffer cycle_buffer_;
     helpers::scrolling_buffer data_exchange_buffer_;
     helpers::scrolling_buffer thread_timestamp_buffer_;
+
+    helpers::scrolling_buffer thread_offset_controller_error_buffer_;
+    helpers::scrolling_buffer thread_offset_controller_correction_buffer_;
+
     long int start_cycle_time_old_ns_;
     float t_s_;
     double t_start_ns_;
@@ -37,6 +41,7 @@ private:
 
     jcs::statistics_timing timing_{};
     jcs::statistics_health health_{};
+    jcs::statistics_transport transport_{};
 };
 
 #endif
