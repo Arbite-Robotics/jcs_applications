@@ -9,6 +9,7 @@
 #include "gui_mc_cogging.h"
 #include "gui_mc_current_test.h"
 #include "gui_mc_encoder_calib.h"
+#include "gui_mc_thermal_calib.h"
 #include "gui_firmware_update.h"
 #include <iostream>
 
@@ -24,6 +25,7 @@ gui_device_motor_controller::gui_device_motor_controller(jcs::jcs_host* host, gu
     gui_element_.push_back(new gui_mc_encoder(host_, gui_if_, name_));
     gui_element_.push_back(new gui_mc_encoder_calib(host_, gui_if_, name_));
     gui_element_.push_back(new gui_mc_cogging(host_, gui_if_, name_));
+    gui_element_.push_back(new gui_mc_thermal_calib(host_, gui_if_, name_));
     gui_element_.push_back(new gui_oscilloscope(host_, gui_if_, name_,
         &jcs::node_parameter::dev_motor_controller::oscilloscope_sources,
         &jcs::node_parameter::dev_motor_controller::oscilloscope_trigger_config,
