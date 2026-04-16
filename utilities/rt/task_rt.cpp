@@ -228,10 +228,10 @@ int task_rt::task_start(thd_context* ctx) {
         return jcs::RET_ERROR;
     }
 
-    // Isolate CPU 1 for the realtime task
+    // Pin to cpu 0 for non-rt task
     cpu_set_t cpu_set;
     CPU_ZERO(&cpu_set);
-    CPU_SET(1, &cpu_set);
+    CPU_SET(0, &cpu_set);
 
     r = pthread_attr_setaffinity_np(&attr, sizeof(cpu_set), &cpu_set);
     if (r < 0) {

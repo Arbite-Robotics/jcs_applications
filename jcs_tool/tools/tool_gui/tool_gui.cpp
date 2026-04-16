@@ -73,6 +73,12 @@ static void glfw_error_callback(int error, const char* description) {
 }
 
 int tool_gui::step_parameter_startup() {
+    // Ensure this thread stays on CPU 0
+    cpu_set_t cpu_set;
+    CPU_ZERO(&cpu_set);
+    CPU_SET(0, &cpu_set);
+    pthread_setaffinity_np(pthread_self(), sizeof(cpu_set), &cpu_set);
+
     // Start network configuration
     if (host_->start_network() != jcs::RET_OK) {
         return jcs::RET_ERROR;
