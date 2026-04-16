@@ -64,6 +64,9 @@ private:
     };
     run_status run_status_;
 
+    bool run_start_script_;
+    bool run_stop_script_;
+
     // Imgui
     GLFWwindow* window_;
     ImVec4 clear_color_;

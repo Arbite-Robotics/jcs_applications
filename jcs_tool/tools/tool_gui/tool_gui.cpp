@@ -29,7 +29,8 @@
 
 tool_gui::tool_gui(std::string name, jcs::jcs_host* host) :
     // tool gui does not use mem lock just yet
-    jcs_tool_if(name, host, false)
+    jcs_tool_if(name, host, false),
+    run_start_script_(true), run_stop_script_(true)
 {
     host_ptr_ = nullptr;
     device_select_idx_ = 0;
@@ -269,7 +270,7 @@ int tool_gui::render_display() {
     // Control buttons
     if (ImGui::Button("START")) {
         if (host_->ready_devices() == jcs::RET_OK) {
-            if (host_->start() == jcs::RET_OK) {
+            if (host_->start(run_start_script_) == jcs::RET_OK) {
                 run_status_ = run_status::running;
             }
         }
@@ -277,7 +278,7 @@ int tool_gui::render_display() {
     ImGui::SameLine();
     if (ImGui::Button("STOP")) {
         run_status_ = run_status::stopped;
-        if (host_->stop() == jcs::RET_OK) {
+        if (host_->stop(run_stop_script_) == jcs::RET_OK) {
             host_->dev_jc_ethercat_timing_print();
             host_->process_timing_print();
         }
@@ -303,7 +304,7 @@ int tool_gui::render_display() {
     ImGui::SameLine();
     if (ImGui::Button("SHUTDOWN")) {
         run_status_ = run_status::stopped;
-        host_->stop();
+        host_->stop(run_stop_script_);
         host_->shutdown();
         // Signal to shutdown
         ImGui::End();
@@ -329,6 +330,10 @@ int tool_gui::render_display() {
             ImGui::TextColored(ImVec4(0.5f, 0.0f, 0.0f, 1.0f), "- ERROR: E-STOP! -");
             break;
     }
+    ImGui::SameLine();
+    ImGui::Checkbox("Run start script", &run_start_script_);
+    ImGui::SameLine();
+    ImGui::Checkbox("Run stop script", &run_stop_script_);
 
     // Nifty Imgui metrics
     // ImGui::SameLine();
@@ -375,7 +380,7 @@ int tool_gui::start() {
     if (host_->ready_devices() != jcs::RET_OK) {
         return jcs::RET_ERROR;
     }
-    if (host_->start() != jcs::RET_OK) {
+    if (host_->start(run_start_script_) != jcs::RET_OK) {
         return jcs::RET_ERROR;
     }
     run_status_ = run_status::running;
@@ -383,7 +388,7 @@ int tool_gui::start() {
 }
 int tool_gui::stop() {
     run_status_ = run_status::stopped;
-    if (host_->stop() != jcs::RET_OK) {
+    if (host_->stop(run_stop_script_) != jcs::RET_OK) {
         return jcs::RET_ERROR;
     }
     host_->dev_jc_ethercat_timing_print();
