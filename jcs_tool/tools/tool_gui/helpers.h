@@ -63,6 +63,7 @@ namespace helpers {
     };
     void combo_select(std::string const& name, std::vector<std::string> const* sources, combo_source* source);
     void listbox_select(std::string const& name, std::vector<std::string>* sources, int display_max_items, int* current_idx, std::string* dest);
+    void result_text_copyable(std::string const& text, int const extra_lines=1);
     void result_text_copyable(std::string const& text, float const& result);
     void result_text_copyable(std::string const& text, int const height, std::vector<float> const& result, int const wrap_after_elements);
 

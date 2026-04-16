@@ -93,10 +93,25 @@ void helpers::listbox_select(std::string const& name, std::vector<std::string>* 
     ImGui::PopID();
 }
 
+void helpers::result_text_copyable(std::string const& text, int const extra_lines) {
+    std::string res_text = text;
+    int line_count = 1 + (int)std::count(text.begin(), text.end(), '\n');
+    int height = line_count + extra_lines; // extra_lines for padding, default 0
+    ImGui::PushID(res_text.c_str());
+    ImGui::InputTextMultiline("", &res_text, ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * height), ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AutoSelectAll);
+    if (ImGui::SmallButton("Copy")) {
+        ImGui::SetClipboardText(text.c_str());
+    }
+    ImGui::PopID();
+}
 void helpers::result_text_copyable(std::string const& text, float const& result) {
     std::string res_text = text + std::to_string(result);
     ImGui::PushID(res_text.c_str());
     ImGui::InputText("", &res_text, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AutoSelectAll);
+    ImGui::SameLine();
+    if (ImGui::SmallButton("Copy")) {
+        ImGui::SetClipboardText(text.c_str());
+    }
     ImGui::PopID();
 }
 void helpers::result_text_copyable(std::string const& text, int const height, std::vector<float> const& result, int const wrap_after_elements) {
@@ -126,6 +141,9 @@ void helpers::result_text_copyable(std::string const& text, int const height, st
 
    ImGui::PushID(res_text.c_str());
    ImGui::InputTextMultiline("", &res_text, ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * height), ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AutoSelectAll);
+    if (ImGui::SmallButton("Copy")) {
+        ImGui::SetClipboardText(text.c_str());
+    }
    ImGui::PopID();
 }
 
